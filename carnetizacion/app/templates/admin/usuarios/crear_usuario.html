@@ -1,0 +1,51 @@
+{% extends "shared/base_a.html" %}
+
+{% block content %}
+
+<div class="section section-sm pb-0 mb-n4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <h3 class="text-center">Usuario</h3>
+        </div>
+    </div>
+</div>
+
+{% for error in errors %}
+    <li>{{error}}</li>
+{% endfor %}
+
+<!-- Section -->
+<div class="section section-md pt-4">
+    <form method="POST">
+    <div class="container">
+        <div class="row mb-4 mb-lg-5">
+            <div class="col-lg-4 col-sm-6">
+                <!-- Form -->
+                <div class="mb-4">
+                    <label for="exampleInputEmail6">Nombre</label>
+                    <input type="nombre_usuario" class="form-control" id="nombre_usuario" name="nombre_usuario" value="{{usuario.nombre_usuario}}">
+                    <small type="error_nombre_usuario" id="error_nombre_usuario" name="error_nombre_usuario" class="form-text text-gray" value="{{error_nombre_usuario}}"></small>
+                </div>
+            </div>
+            <div class="col-lg-4 col-sm-6">
+                <!-- Form -->
+                <div class="mb-4">
+                    <label for="exampleInputEmail6">Rol</label>
+                    <select class="form-select" id="rol_usuario" aria-label="Default select example" name="rol_usuario">
+                        <option selected>{{usuario.rol_usuario}}</option>
+                        <option value="Carnetizador">Carnetizador</option>
+                        <option value="Administrador">Administrador</option>
+                        <option value="SuperAdmin">SuperAdmin</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn bg-gradient-primary my-1 me-1" name="Aceptar" value="{{Aceptar}}">Aceptar</a>
+
+        <!-- <div class="row mb-4 mb-lg-5">
+                <button class="btn btn-primary" type="submit" style="position: inherit;">Crear</button>
+        </div> -->
+    </div>
+</form>
+</div>
+{% endblock content %}

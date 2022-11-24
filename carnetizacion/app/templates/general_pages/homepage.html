@@ -1,0 +1,207 @@
+{% extends "shared/base_homepages.html" %}
+<body>
+
+    {% block content %}
+
+    <main>
+
+        <!-- Hero -->
+        <section class="section-header overflow-hidden bg-primary text-white">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 text-center">
+                        <h1 class="fw-bolder display-2">
+                            Carnet Cujae
+                        </h1>
+                        <h2 class="lead fw-normal text-muted mb-4 px-lg-10">
+                            Identifica facilmente a tus trabajadores, estudiantes o visitantes.
+                        </h2>
+                        <!-- Button Modal -->
+                        <!-- <div class="d-flex justify-content-center align-items-center mb-5">
+                            <a href="#crear_carnet" class="btn btn-tertiary mb-3 mt-2 me-2 me-md-3 animate-up-2"><span
+                                    class="fas fa-th-large me-2"></span> <span class="d-none d-md-inline">
+                                        Crear Carnet
+                                    </span> <span class="d-md-none">Components</span></a>
+                        </div> -->
+                    </div>
+                </div>
+            </div>
+            <figure class="position-absolute bottom-0 left-0 w-100 d-none d-md-block mb-n2">
+                <svg class="fill-white"
+                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3000 185.4">
+                    <path d="M3000,0v185.4H0V0c496.4,115.6,996.4,173.4,1500,173.4S2503.6,115.6,3000,0z"></path>
+                </svg>
+            </figure>
+        </section>
+
+        <div class="section section-sm pb-0 mb-n4" id="crear_carnet">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <h3 class="text-center">Crear Carnet</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="section section-md pb-0">
+            <div class="container">
+                <!-- Title -->
+                <div class="row">
+                    <div class="col">
+                        <h2 class="h5">Buscar persona por</h2>
+                    </div>
+                </div>
+                <!-- End of Title -->
+            </div>
+        </div>
+
+        <div class="section section-md pt-4">
+            <form method="post" id="buscarPersona">
+            <div class="container">
+                <div class="row mb-4 mb-lg-5">
+                    <div class="row mb-5 mb-lg-5">
+                    <div class="col-lg-4 col-sm-6">
+                        <!-- Form -->
+                        <div class="mb-4">
+                            <label for="exampleInputEmail6">Carnet de Identidad</label>
+                            <input type="text" class="form-control" id="ciBuscarPersona" name="ciBuscarPersona">
+                            <small id="emailHelp" class="form-text text-gray">{{errorCI}}</small>
+                        </div>
+                        <!-- End of Form -->
+                    </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <!-- Form -->
+                        <div class="mb-3">
+                            <label class="my-1 me-2" for="inlineFormCustomSelectPref">Area</label>
+                            <input type="text" class="form-control" id="areaBuscarPersona" name="areaBuscarPersona">
+                            <small id="emailHelp" class="form-text text-gray">{{errorArea}}</small>
+                        </div>
+                        <!-- End of Form -->
+
+                    </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <!-- Form -->
+                        <div class="mb-3">
+                            <label class="my-1 me-2" for="inlineFormCustomSelectPref">Tipo de Persona</label>
+                            <select class="form-select" id="tipoBuscarPersona" aria-label="Default select example" onchange="AnnoEstudiante()" name="tipoBuscarPersona" value="tipoBuscarPersona">
+                                <option selected>Seleccione</option>
+                                <option value="Worker">Trabajador</option>
+                                <option value="Student">Estudiante</option>
+                            </select>
+                        </div>
+                        <!-- End of Form -->
+                    </div>
+                </div>
+                <div class="row mb-5 mb-lg-5">
+                        <!-- Checkboxes -->
+                        <div class="mb-3">
+                            <span class="h6 fw-bold">Año del estudiante</span>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                        <div class="form-check">
+                            <label class="form-check-label" for="defaultCheck2">
+                            <input class="form-check-input" type="checkbox" value="1" name="Check1" id="Check1" disabled>
+                            <label class="form-check-label" for="defaultCheck1">
+                                Primero
+                            </label>
+                        </div>
+                        </div>
+                        <div class="col-lg-3 col-sm">
+                        <div class="form-check">
+                            <label class="form-check-label" for="defaultCheck2">
+                            <input class="form-check-input" type="checkbox" value="2" id="Check2" name="Check2" disabled>
+                            <label class="form-check-label" for="defaultCheck2">
+                                Segundo
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="Check3" name="Check3" value="3" disabled>
+                            <label class="form-check-label" for="defaultCheck2">
+                                Tercero
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="4" name="Check4" id="Check4" disabled>
+                            <label class="form-check-label" for="defaultCheck2">
+                                Cuarto
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-4 mb-lg-5">
+                <button class="btn btn-primary" type="submit" style="position: inherit;">Buscar</button>
+            </div>
+            </div>
+            </form>
+        </div>
+
+        <div class="section section-md">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-12">
+                        <div class="mb-5">
+                            <div class="mb-4">
+                                <span class="h5"></span>
+                            </div>
+                            <table class="table table-hover">
+                                <tr>
+                                    <!-- <th scope="col" >
+                                        <div class="form-check">
+                                            <label class="form-check-label" for="defaultCheck1">Seleccionar Todo</label>
+                                            <input class="form-check-input" type="checkbox" value="seleccionar_todo" name="seleccionar_todo" id="seleccionar_todo" onchange="SeleccionarTodo()">
+                                        </div>
+                                    </th> -->
+                                    <th scope="col" id="class3">DNI</th>
+                                    <th scope="col" id="teacher3">Nombre</th>
+                                    <th scope="col" id="females3">Tipo de Persona</th>
+                                    <th scope="col">Año del estudiante</th>
+                                    <th scope="col"></th>
+                                </tr>
+                                <tr>
+                                    {% for user in users %}
+                                    <!-- <td>
+                                        <div class="form-check">
+                                            <label class="form-check-label" for="defaultCheck2">
+                                            <input class="form-check-input Checklist" type="checkbox" value="{{ user['cUJAEPersonDNI']}}"  name="checkpersonas" id="checkpersonas">
+                                        </div>
+                                    </td> -->
+                                    <td>{{ user["cUJAEPersonDNI"] }}</td>
+                                    <!-- <td>{{ user }}</td> -->
+                                    <td>{{ user["name"] }}</td>
+                                    {% if user["cUJAEPersonType"] == "Student" -%}
+                                    <td>Estudiante</td>
+                                    <td>{{ user["cUJAEStudentYear"] }}</td>
+                                    {%- elif user["cUJAEPersonType"] == "Worker" -%}
+                                    <td>Trabajador</td>
+                                    {%- endif %}
+                                    <td><a href="/crear_carnet/{{area}}/{{user['cUJAEPersonDNI'] }}" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit user">
+                                        Crear carnet
+                                      </a> </td>
+                                    <!-- <td><a href="" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit user">
+                                        Cambiar estado
+                                      </a></button></td>
+                                    <td><a href="" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit user">
+                                        Imprimir
+                                        </a></td> -->
+                                </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+                           </div>
+                </div>
+            </div>
+        </div>
+        <!-- <div class="section section-md" style="display: none"> -->
+
+        </main>
+        {% include 'includes/footer.html' %}
+    {% endblock %}
+
+    {% block scripts %}
+    <script src="{{url_for('static', path='js/homepage.js') }}"></script>
+
+    {% endblock %}
+</body>

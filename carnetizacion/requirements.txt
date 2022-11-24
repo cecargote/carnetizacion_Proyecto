@@ -1,0 +1,38 @@
+psycopg2-binary
+uvicorn
+requests==2.26.0
+barcode_generator==0.1rc15
+fastapi==0.70.0
+psycopg2==2.9.1
+pydantic==1.8.2
+qrcode==7.3.1
+starlette==0.16.0
+python-barcode==0.13.1
+uvicorn[standard]
+python-jose
+PyJWT
+python-multipart
+
+#database
+sqlalchemy
+
+#for loading environment variables
+python-dotenv
+
+#for  cleaning up codebase on each commit
+pre-commit
+
+#seedir to print tree structure of folders
+seedir
+
+#for template
+jinja2
+
+#for static files
+aiofiles
+
+#auth
+httpx
+
+#for testing
+pytest

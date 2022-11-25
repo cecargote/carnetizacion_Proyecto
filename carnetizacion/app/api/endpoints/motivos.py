@@ -6,7 +6,7 @@ from db.repository.tipo_motivos import list_motivos
 from db.repository.tipo_motivos import retreive_motivo
 from db.repository.tipo_motivos import update_motivo_by_id
 from db.session import get_db
-
+from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import status

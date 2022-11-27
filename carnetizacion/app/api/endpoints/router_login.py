@@ -34,7 +34,7 @@ router = APIRouter()
 
 def authenticate_user(nombre_usuario: str, db: Session):
     user = get_user(nombre_usuario=nombre_usuario, db=db)
-    print(user)
+    #print(user)
     if not user:
         return False
     return user
@@ -46,10 +46,10 @@ def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
 ):
-    print("login for acess token")
+    #print("login for acess token")
     user = authenticate_user(form_data.username, db)
-    print(user.id)
-    print("el usuario de lfat es:" + user.nombre_usuario)
+   # print(user.id)
+   # print("el usuario de lfat es:" + user.nombre_usuario)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -57,18 +57,18 @@ def login_for_access_token(
         )
     # access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     url = settings.API_AUDIENCE + "user/login"
-    print(url)
+   # print(url)
     responseURL = requests.get(url, auth=(form_data.username, form_data.password))
-    print(responseURL)
+    #print(responseURL)
     if responseURL.status_code != 502:
         # data = json.dumps(result)
         update_state_usuario_by_id(id=user.id, db=db)
         result = json.loads(str(responseURL.text))
-        print(result)
+        #print(result)
         result_data = result["data"]
         access_token = result_data["access_token"]
         refresh_token = result_data["refresh_token"]
-        print(access_token)
+        #print(access_token)
         response.set_cookie(
             key="access_token", value=f"Bearer {access_token}", httponly=True
         )
@@ -87,30 +87,30 @@ oauth2_scheme = OAuth2PasswordBearerWithCookie(tokenUrl="/login/token")
 
 @router.post("/refresh_token", response_model=Token)
 def refreshToken(request: Request):
-    print("entro al refresh")
+    #print("entro al refresh")
     refresh_url = settings.API_AUDIENCE + "user/refresh-token"
-    print(refresh_url)
+    #print(refresh_url)
     token = request.cookies.get("access_token")
-    print(token)
+    #print(token)
     refresh = request.cookies.get("refresh_token")
-    print(refresh)
+    #print(refresh)
     scheme1, param1 = get_authorization_scheme_param(token)
     scheme, param = get_authorization_scheme_param(refresh)
-    print(param)
-    print(param1)
+   # print(param)
+    #print(param1)
     token = param1
     headers = {"Authorization": "Bearer {}".format(token)}
-    print(headers)
+    #print(headers)
     body = {"refresh_token": param}
-    print(body)
+   # print(body)
     response = requests.post(refresh_url, headers=headers, json=body)
-    print(response)
+    #print(response)
     if response.status_code != 401:
         result = json.loads(str(response.text))
-        print(result)
+        #print(result)
         access_token = result["access_token"]
         refresh_token = result["refresh_token"]
-        print(access_token)
+       # print(access_token)
 
     return {
         "access_token": access_token,
@@ -130,18 +130,18 @@ def get_current_user_from_token(
     #     detail="No se puede validar las credenciales",
     # )
     # try:
-    print("El token es", token)
+   # print("El token es", token)
     user_url = settings.API_AUDIENCE + "tree/OU=Facultad de Ingenieria Informatica"
     headers = {"Authorization": "Bearer {}".format(token)}
-    print(headers)
+   # print(headers)
     response_api = requests.get(user_url, headers=headers)
-    print(response_api)
+   # print(response_api)
     if response_api.status_code == 401:
-        print("Esta entrando al 401")
+       # print("Esta entrando al 401")
         refresh = refreshToken(request=request)
         access_token = refresh["access_token"]
         refresh_token = refresh["refresh_token"]
-        print(access_token)
+        #print(access_token)
         response.set_cookie(
             key="access_token", value=f"Bearer {access_token}", httponly=True
         )
@@ -151,10 +151,10 @@ def get_current_user_from_token(
         userheader = jwt.decode(access_token, options={"verify_signature": False})
     else:
         userheader = jwt.decode(token, options={"verify_signature": False})
-    print(userheader)
+   # print(userheader)
     username = userheader["sub"]
-    print("el usuario a continucion")
-    print(username)
+    #print("el usuario a continucion")
+   # print(username)
     # response = requests.get(user_url + username, headers=headers)
     # print(response)
     # result = json.loads(str(response.text))
@@ -163,11 +163,11 @@ def get_current_user_from_token(
     # except JWTError:
     # print("ESTOY EXCEPT")
     # raise credentials_exception
-    print("ya esta pidiendo el user")
+    #print("ya esta pidiendo el user")
     user = get_user(nombre_usuario=username, db=db)
-    print(user)
+    #print(user)
     if user is None:
-        print("user 2")
+       # print("user 2")
         return responses.RedirectResponse("login", status_code=status.HTTP_302_FOUND)
         # raise credentials_exception
     return {"user": user, "response": response}
@@ -178,8 +178,8 @@ def logout(request: Request, db: Session = Depends(get_db)):
     try:
         token = request.cookies.get("access_token")
         scheme, param = get_authorization_scheme_param(token)
-        print(token)
-        print(scheme)
+        #print(token)
+        #print(scheme)
         response = responses.RedirectResponse(
             "/login", status_code=status.HTTP_302_FOUND
         )
@@ -187,11 +187,11 @@ def logout(request: Request, db: Session = Depends(get_db)):
             response=response, request=request, token=param, db=db
         )
         usuario_actual: Usuario = user_response["user"]
-        print("El usuario actual es", usuario_actual)
+       # print("El usuario actual es", usuario_actual)
         update_state_usuario_by_id_logout(id=usuario_actual.id, db=db)
         # request.cookies.delete_cookie("access_token")
         # request.cookies.delete_cookie("refresh_token")
-        print("request original")
+        #print("request original")
         response.set_cookie(
             key="access_token", value="", httponly=True
         )

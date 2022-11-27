@@ -3,10 +3,10 @@ from sqlalchemy.orm import Session
 
 
 def get_user(nombre_usuario: str, db: Session):
-    print("entro")
+    #print("entro")
     user = db.query(Usuario).filter(Usuario.nombre_usuario == nombre_usuario).first()
-    print("el user es")
-    print(user)
+    #print("el user es")
+    #print(user)
     return user
 
 

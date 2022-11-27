@@ -37,18 +37,18 @@ router = APIRouter()
 async def login(request: Request, db: Session = Depends(get_db)):
     token = request.cookies.get("access_token")
     response = templates.TemplateResponse("login/login.html", {"request": request})
-    print(token)
+    #print(token)
     if token is None:
         return response
     else:
         try:
         
            scheme, param = get_authorization_scheme_param(token)
-           print(token)
-           print(scheme)
+           #print(token)
+           #print(scheme)
            user_response = get_current_user_from_token(response=response, request=request, token=param, db=db)
            usuario_actual: Usuario = user_response["user"]
-           print("El usuario actual es", usuario_actual)
+           #print("El usuario actual es", usuario_actual)
            if (usuario_actual.rol_usuario == "Administrador"
             or usuario_actual.rol_usuario == "SuperAdmin"):
               return responses.RedirectResponse("admin", status_code=status.HTTP_302_FOUND)
@@ -65,6 +65,7 @@ async def login(request: Request, db: Session = Depends(get_db)):
     # return templates.TemplateResponse("login/login.html")
     form = LoginForm(request)
     await form.load_data()
+   
     if await form.is_valid():
         try:
             form.__dict__.update(msg="Inicio de Sesion Exitoso :)")
@@ -84,7 +85,7 @@ async def login(request: Request, db: Session = Depends(get_db)):
                 )
             login_a=login_for_access_token(response=response, form_data=form, db=db)
             authorization: str = login_a["access_token"]  # changed to accept access token from httpOnly Cookie
-            print("access_token is", authorization)
+            #print("access_token is", authorization)
             user = get_user(nombre_usuario=form.username, db=db)
             # if user.rol_usuario == "Carnetizador":
             #     print("entro carnetizador")
@@ -97,7 +98,7 @@ async def login(request: Request, db: Session = Depends(get_db)):
             #         f"/admin", status_code=302
             #     )
 
-            print("El usuer es" + user.rol_usuario)
+            #print("El usuer es" + user.rol_usuario)
             # authorization = base64.b64encode(bytes(form.username +":"+ form.password), "uft-8")
             # print(authorization)
             # has_access(authorization)
@@ -105,4 +106,8 @@ async def login(request: Request, db: Session = Depends(get_db)):
         except HTTPException:
             form.__dict__.update(msg="")
             form.__dict__.get("errors").append("Incorrecto Usuario o Contraseña")
-            return templates.TemplateResponse("login/login.html", form.__dict__)
+            
+    else :
+        print ("error de autentificacion")
+        form.__dict__.update(msg="")
+        return templates.TemplateResponse("login/login.html", form.__dict__)

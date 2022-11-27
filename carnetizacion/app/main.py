@@ -10,7 +10,7 @@ from webapp.base import api_router as web_app_router
 
 
 def create_tables():
-    print("create_tables")
+    
     Base.metadata.create_all(bind=engine)
 
 

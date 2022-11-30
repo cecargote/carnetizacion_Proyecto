@@ -41,46 +41,42 @@ def authenticate_user(nombre_usuario: str, db: Session):
 
 
 @router.post("/token", response_model=Token)
-def login_for_access_token(
+def login_for_access(
     response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
 ):
-    #print("login for acess token")
     user = authenticate_user(form_data.username, db)
-   # print(user.id)
-   # print("el usuario de lfat es:" + user.nombre_usuario)
+   
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
         )
-    # access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    url = settings.API_AUDIENCE + "user/login"
-   # print(url)
-    responseURL = requests.get(url, auth=(form_data.username, form_data.password))
-    #print(responseURL)
-    if responseURL.status_code != 502:
-        # data = json.dumps(result)
+    
+    url = settings.API_AUDIENCE + "login"
+    print(url)
+    data = {
+    "username": form_data.username,
+    "password": form_data.password }
+     
+    responseURL = requests.post(url, auth=("fpicayo.sec", "Sigenu_sec_*2014*"),json=data)
+    print ("url response ")
+    print(responseURL.url)
+    print ("satus : ")
+    print ()
+    
+    if (responseURL.status_code== 200):
         update_state_usuario_by_id(id=user.id, db=db)
-        result = json.loads(str(responseURL.text))
-        #print(result)
-        result_data = result["data"]
-        access_token = result_data["access_token"]
-        refresh_token = result_data["refresh_token"]
-        #print(access_token)
-        response.set_cookie(
-            key="access_token", value=f"Bearer {access_token}", httponly=True
+    else:
+            raise HTTPException(
+            status_code=responseURL.status_code,
+            detail="Incorrect username or password LDAP",
         )
-        response.set_cookie(
-            key="refresh_token", value=f"Bearer {refresh_token}", httponly=True
-        )
-    return {
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "token_type": "bearer",
-    }
 
+    return Response
+
+    
 
 oauth2_scheme = OAuth2PasswordBearerWithCookie(tokenUrl="/login/token")
 

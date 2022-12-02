@@ -10,8 +10,8 @@ from fastapi.params import Depends
 from fastapi.security.utils import get_authorization_scheme_param
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-
-
+from core.config import settings
+import requests
 
 templates = Jinja2Templates(directory="templates")
 
@@ -37,3 +37,15 @@ db: Session = Depends(get_db),
             return responses
      print("El usuario actual no es admin -> Login")  
      return responses.RedirectResponse("login", status_code=status.HTTP_302_FOUND)
+
+def cantidad_trabajadores():
+    url = settings.API_AUDIENCE + "workers"
+    
+    area = "OU=Facultad de Ingenieria Mecanica,DC=cujae,DC=edu,DC=cu"
+    data = { "area": area}
+    responseURL = requests.post(url, auth=("fpicayo.sec", "Sigenu_sec_*2014*"),json=data)
+    print ("url response "+responseURL.url+ " status: "+responseURL.status_code)
+    
+    print(responseURL.text)
+
+    return None

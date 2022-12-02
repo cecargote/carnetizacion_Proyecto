@@ -10,7 +10,6 @@ from schemas.token import Token
 from db.repository.login import get_user
 from core.security import create_access_token
 from core.config import settings
-from db.repository import usuario
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
@@ -20,6 +19,7 @@ router = APIRouter()
 
 def authenticate_user(username: str, password: str,db: Session):
     user = get_user(username,db)
+    
     if not user:
         return False
     if not buscarUserLdap(username, password):
@@ -33,8 +33,10 @@ def buscarUserLdap(usuario: str, password:  str):
     "username": usuario,
     "password": password}
     responseURL = requests.post(url, auth=("fpicayo.sec", "Sigenu_sec_*2014*"),json=data)
-    print ("url response "+responseURL.url+ " status: "+responseURL.status_code)
-    if (responseURL.status_code== 200):
+    print ("url response "+responseURL.url)
+    print("status: ")
+    print(responseURL.status_code)
+    if (responseURL.status_code == 200):
         return True
     else: 
         return False

@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from datetime import timedelta
 from fastapi import status,HTTPException
 import requests
+from db.models import usuario
+from db.repository.usuario import update_state_usuario_by_id_logout
 from db.session import get_db
 from fastapi import Request
 from schemas.token import Token
@@ -16,11 +18,12 @@ from sqlalchemy.orm import Session
 from fastapi import Response    #new
 from api.utils import OAuth2PasswordBearerWithCookie    #new
 import json
+from fastapi import responses 
+from fastapi.security.utils import get_authorization_scheme_param
 router = APIRouter()
 
 def authenticate_user(username: str, password: str,db: Session):
-    user = get_user(username,db)
-    
+    user = get_user(username,db) 
     if not user:
         return False
     if not buscarUserLdap(username, password):
@@ -98,3 +101,32 @@ def get_current_user_from_token(
 @router.post("/refresh_token", response_model=Token)
 def refreshToken(request: Request):
     return None
+
+@router.get("/cerrarsesion")
+def logout(request: Request, db: Session = Depends(get_db)):
+    try:
+        token = request.cookies.get("access_token")
+        scheme, param = get_authorization_scheme_param(token)  # scheme will hold "Bearer" and param will hold actual token value
+       
+        response = responses.RedirectResponse(
+            "/login", status_code=status.HTTP_302_FOUND
+        )
+        try: 
+            current_user: usuario = get_current_user_from_token(param, db)
+        except HTTPException:
+            print("No se encontro el usuario")
+            response = responses.RedirectResponse("/login", status_code=status.HTTP_302_FOUND)
+            response.set_cookie(key="access_token", value="", httponly=True)
+            response.set_cookie(key="refresh_token", value="", httponly=True)
+            return response
+        
+        print("El usuario actual es: ", current_user.nombre_usuario)
+        
+        update_state_usuario_by_id_logout(current_user.id, db)
+        print("------> cession cerrada <-----")
+        
+        response.set_cookie(key="access_token", value="", httponly=True)
+        response.set_cookie(key="refresh_token", value="", httponly=True)
+        return response
+    except Exception as e:
+        print(e)

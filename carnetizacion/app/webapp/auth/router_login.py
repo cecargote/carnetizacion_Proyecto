@@ -58,7 +58,7 @@ async def login(request: Request, db: Session = Depends(get_db)):
                     f"/admin", status_code=status.HTTP_302_FOUND
                 )
             try:
-                login_a=login_for_access_token(response=response, form_data=form, db=db)
+                login_a=login_for_access_token(response, form, db)
             except Exception:
                 print ("Usuario o Contraseña from LDAP")
                 form.__dict__.get("errors").append("Incorrecto Usuario o Contraseña")

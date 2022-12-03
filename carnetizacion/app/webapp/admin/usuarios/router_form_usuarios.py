@@ -24,27 +24,28 @@ async def form_usuarios(request: Request, db: Session = Depends(get_db)):
     try:
         token = request.cookies.get("access_token")
         scheme, param = get_authorization_scheme_param(token)
-        print(token)
-        print(scheme)
+
         usuario = ""
         response = templates.TemplateResponse(
             "admin/usuarios/crear_usuario.html",
             {"request": request, "usuario": usuario},
         )
-        user_response = get_current_user_from_token(
-            response=response, request=request, token=param, db=db
-        )
-        usuario_actual: Usuario = user_response["user"]
-        print("El usuario actual es", usuario_actual)
+        try:
+            current_user: Usuario = get_current_user_from_token(param, db)
+        except HTTPException:
+            print("Error al cargar el usuario, sera enviado al LOGIN")
+            return  responses.RedirectResponse("login", status_code=status.HTTP_401_UNAUTHORIZED)
+        
+        
         if (
-            usuario_actual.rol_usuario == "Carnetizador"
-            or usuario_actual.rol_usuario == "SuperAdmin"
+            current_user.rol_usuario == "Carnetizador"
+            or current_user.rol_usuario == "SuperAdmin"
         ):
-            return user_response["response"]
+            return response
 
     except Exception as e:
         print(e)
-        print("entro error")
+        print("Error en Form Usuarios")
         return responses.RedirectResponse("/login", status_code=status.HTTP_302_FOUND)
 
 
@@ -54,25 +55,26 @@ async def form_usuarios(request: Request, db: Session = Depends(get_db)):
     await form.load_data()
     if form.is_valid():
         try:
-            print("entro")
-            print(form.rol_usuario)
+            
             token = request.cookies.get("access_token")
             scheme, param = get_authorization_scheme_param(token)
+            
             response = responses.RedirectResponse(
                 f"/usuario_admin", status_code=status.HTTP_302_FOUND
             )
-            user_response = get_current_user_from_token(
-                response=response, request=request, token=param, db=db
-            )
-            usuario_actual: Usuario = user_response["user"]
-            print("El usuario actual es", usuario_actual)
+            try:
+                current_user: Usuario = get_current_user_from_token(param, db)
+            except HTTPException:
+                print("Error al cargar el usuario, sera enviado al LOGIN")
+                return  responses.RedirectResponse("login", status_code=status.HTTP_401_UNAUTHORIZED)
+            
             if (
-                usuario_actual.rol_usuario == "Administrador"
-                or usuario_actual.rol_usuario == "SuperAdmin"
+                current_user.rol_usuario == "Administrador"
+                or current_user.rol_usuario == "SuperAdmin"
             ):
                 usuario = UsuarioCreate(**form.__dict__)
                 usuario = create_new_user(user=usuario, db=db)
-                return user_response["response"]
+                return response
         except HTTPException:
             print(HTTPException)
             return responses.RedirectResponse(

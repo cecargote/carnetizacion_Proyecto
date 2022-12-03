@@ -4,7 +4,7 @@ from api.endpoints.router_login import get_current_user_from_token
 from db.models.usuario import Usuario
 from db.repository.tipo_motivos import list_motivos
 from db.session import get_db
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi import Depends
 from fastapi import Request
 from fastapi import responses
@@ -24,23 +24,23 @@ async def admin(request: Request, db: Session = Depends(get_db)):
     try:
         token = request.cookies.get("access_token")
         scheme, param = get_authorization_scheme_param(token)
-        print(token)
-        print(scheme)
+        
         list_tipo_motivos = list_motivos(db=db)
         response = templates.TemplateResponse(
             "admin/motivos/admin_motivos.html",
             {"request": request, "list_tipo_motivos": list_tipo_motivos},
         )
-        user_response = get_current_user_from_token(
-            response=response, request=request, token=param, db=db
-        )
-        usuario_actual: Usuario = user_response["user"]
-        print("El usuario actual es", usuario_actual)
+        try:
+            current_user: Usuario = get_current_user_from_token(param, db)
+        except HTTPException:
+            print("Error al cargar el usuario, sera enviado al LOGIN")
+            return  responses.RedirectResponse("login", status_code=status.HTTP_401_UNAUTHORIZED)
+        
         if (
-            usuario_actual.rol_usuario == "Administrador"
-            or usuario_actual.rol_usuario == "SuperAdmin"
+            current_user.rol_usuario == "Administrador"
+            or current_user.rol_usuario == "SuperAdmin"
         ):
-            return user_response["response"]
+            return response
     except Exception as e:
         print(e)
         return templates.TemplateResponse("login/login.html", {"request": request})

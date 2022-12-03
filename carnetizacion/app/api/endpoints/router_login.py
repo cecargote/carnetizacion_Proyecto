@@ -15,6 +15,7 @@ from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 from fastapi import Response    #new
 from api.utils import OAuth2PasswordBearerWithCookie    #new
+import json
 router = APIRouter()
 
 def authenticate_user(username: str, password: str,db: Session):
@@ -27,16 +28,25 @@ def authenticate_user(username: str, password: str,db: Session):
     return user
 
 def buscarUserLdap(usuario: str, password:  str):
-    url = settings.API_AUDIENCE + "login"
-    
-    data = {
+    reqUrl = "https://sigenu.cujae.edu.cu/sigenu-ldap-cujae/ldap/login"
+
+    headersList = {
+    "Accept": "*/*",
+    "User-Agent": "Thunder Client (https://www.thunderclient.com)",
+    "Authorization": "Basic ZnBpY2F5by5zZWM6U2lnZW51X3NlY18qMjAxNCo=",
+    "Content-Type": "application/json" 
+    }
+
+    payload = json.dumps({
     "username": usuario,
-    "password": password}
-    responseURL = requests.post(url, auth=("fpicayo.sec", "Sigenu_sec_*2014*"),json=data)
-    print ("url response "+responseURL.url)
+    "password": password
+    })
+
+    response = requests.request("POST", reqUrl, data=payload,  headers=headersList)
+    print ("url response "+response.url)
     print("status: ")
-    print(responseURL.status_code)
-    if (responseURL.status_code == 200):
+    print(response.status_code)
+    if (response.status_code == 200):
         return True
     else: 
         return False

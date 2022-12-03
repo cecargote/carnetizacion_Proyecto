@@ -44,18 +44,14 @@ db: Session = Depends(get_db),
 
 def cantidad_trabajadores_totales():
  
-    reqUrl = "https://sigenu.cujae.edu.cu/sigenu-ldap-cujae/ldap/workers?area=OU=Facultad de Ingenieria Mecanica,DC=cujae,DC=edu,DC=cu"
-
+    reqUrl = "https://sigenu.cujae.edu.cu/sigenu-ldap-cujae/ldap/persons?area=OU=DG de ICI,OU=Area Central,DC=cujae,DC=edu,DC=cu"
     headersList = {
     "Accept": "*/*",
     "User-Agent": "Thunder Client (https://www.thunderclient.com)",
-    "Authorization": "Basic ZGlzZXJ0aWMubGRhcDpkaXNlcnRpYyoyMDIyKmxkYXA=",
-    "Content-Type": "application/json" 
-    }
+    "Authorization": "Basic ZGlzZXJ0aWMubGRhcDpkaXNlcnRpYyoyMDIyKmxkYXA=" 
+        }
 
-    payload = json.dumps({
-    "area": "OU=Facultad de Ingenieria Mecanica,DC=cujae,DC=edu,DC=cu"
-    })
+    payload = ""
 
     response = requests.request("GET", reqUrl, data=payload,  headers=headersList)
     

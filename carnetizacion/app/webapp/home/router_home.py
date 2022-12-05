@@ -36,42 +36,68 @@ async def home(request: Request, db: Session = Depends(get_db)):
     try:
         token = request.cookies.get("access_token")
         scheme, param = get_authorization_scheme_param(token)
-        print(token)
-        print(scheme)
+        
+        lista_areas, count= buscarAreas()
+        total_areas= count
+
         response = templates.TemplateResponse(
-            "general_pages/homepage.html", {"request": request}
-        )
-        user_response = get_current_user_from_token(
-            response=response, request=request, token=param, db=db
-        )
-        usuario_actual: Usuario = user_response["user"]
-        print("El usuario actual es", usuario_actual)
+            "general_pages/homepage.html", {"request": request,  "total_areas": total_areas, "lista_areas":lista_areas})
+        
+        try:
+            current_user: Usuario = get_current_user_from_token(param, db)
+        except HTTPException:
+            print("Error al cargar el usuario, sera enviado al LOGIN")
+            return  responses.RedirectResponse("login", status_code=status.HTTP_401_UNAUTHORIZED)
         if (
-            usuario_actual.rol_usuario == "Carnetizador"
-            or usuario_actual.rol_usuario == "SuperAdmin"
+            current_user.rol_usuario == "Carnetizador"
+            or current_user.rol_usuario == "SuperAdmin"
         ):
-            return user_response["response"]
+            return response
 
     except Exception as e:
         print(e)
-        print("entro error")
+        print("Error Home")
         return responses.RedirectResponse("/login", status_code=status.HTTP_302_FOUND)
 
+def buscarAreas():
+    import requests
 
+    reqUrl = "https://sigenu.cujae.edu.cu/sigenu-ldap-cujae/ldap/areas"
+
+    headersList = {
+    "Accept": "*/*",
+    "User-Agent": "Thunder Client (https://www.thunderclient.com)",
+    "Authorization": "Basic ZGlzZXJ0aWMubGRhcDpkaXNlcnRpYyoyMDIyKmxkYXA=" 
+    }
+
+    payload = ""
+
+    response = requests.request("GET", reqUrl, data=payload,  headers=headersList)
+   
+    result = json.loads(str(response.text))
+    name = result[1]['name']          
+    lista=""
+    count =0
+    for iter in result:
+        iter['name']
+        count= count +1
+        lista= lista +iter['name']+ ","
+    
+    return lista, count
+    
 @router.post("/")
 async def home(request: Request):
     form = BuscarPersonaForm(request)
     await form.load_data()
-    # print(request.json())
+    
     if form.is_valid():
         try:
             token = request.cookies.get("access_token")
             scheme, param = get_authorization_scheme_param(token)
-            headers = {"Authorization": "Bearer {}".format(param)}
-            print("Entoooo")
+            
             area=form.areaBuscarPersona
             if form.ciBuscarPersona:
-                print("ciii")
+                
                 url = (
                     settings.API_AUDIENCE
                     + "tree/OU="

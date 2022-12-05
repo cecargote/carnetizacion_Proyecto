@@ -69,13 +69,26 @@
                         <!-- End of Form -->
                     </div>
                     <div class="col-lg-4 col-sm-6">
-                        <!-- Form -->
+                       
                         <div class="mb-3">
                             <label class="my-1 me-2" for="inlineFormCustomSelectPref">Area</label>
-                            <input type="text" class="form-control" id="areaBuscarPersona" name="areaBuscarPersona">
-                            <small id="emailHelp" class="form-text text-gray">{{errorArea}}</small>
+                        
+                            <select type="form-select" class="form-control" id="areaBuscarPersona" name="areaBuscarPersona" aria-label="Default select example" >
+                               
+                                <option selected>Seleccione</option>
+                                <script>
+                                    var list = "{{lista_areas}}";
+                                    console.log(list)
+                                    var arr = list.split(','); 
+                                    var count  = JSON.parse("{{total_areas}}");
+                                    var select = document.getElementById('areaBuscarPersona');
+                                    for (var i = 0; i < count; i++){
+                                    select.options[select.options.length] = new Option(arr[i], i);
+                                    }
+                                </script>
+                            </select>         
                         </div>
-                        <!-- End of Form -->
+                        
 
                     </div>
                     <div class="col-lg-4 col-sm-6">

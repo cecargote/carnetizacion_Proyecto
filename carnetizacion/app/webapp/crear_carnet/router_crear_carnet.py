@@ -68,31 +68,32 @@ async def crear_carnet(area,ci, request: Request, db: Session = Depends(get_db))
         print(person_carnet)
         token = request.cookies.get("access_token")
         scheme, param = get_authorization_scheme_param(token)
-        print(token)
-        print(scheme)
-        headers = {"Authorization": "Bearer {}".format(param)}
-        url = (
-                    settings.API_AUDIENCE
-                    + "tree/OU="
-                    + area
-                    + ",DC=cujae,DC=edu,DC=cu?filters=cUJAEPersonDNI:"
-                    + ci
-                )
-        response = requests.get(url, headers=headers)
-        print(response)
+       
+
+
+        reqUrl = "https://sigenu.cujae.edu.cu/sigenu-ldap-cujae/ldap/search-all"
+
+        headersList = {
+        "Accept": "*/*",
+        "User-Agent": "Thunder Client (https://www.thunderclient.com)",
+        "Authorization": "Basic ZGlzZXJ0aWMubGRhcDpkaXNlcnRpYyoyMDIyKmxkYXA=",
+        "Content-Type": "application/json" 
+            }
+
+        payload = json.dumps({
+        "identification": "97041207064",
+        "name": "",
+        "lastname": "",
+        "surname": "",
+        "email": "",
+        "area": "OU=DG de ICI,OU=Area Central,DC=cujae,DC=edu,DC=cu"
+        })
+
+        response = requests.request("POST", reqUrl, data=payload,  headers=headersList)
+
         if response.status_code == 401:
             print("entro al if 401")
-            tokenR = refreshToken(request=request)
-            print("lo q devuelve el refresh", tokenR)
-            tokenRAcceso = tokenR["access_token"]
-            tokenRRefresh = tokenR["refresh_token"]
-            print(tokenRAcceso)
-                    # token = request.cookies.get("access_token")
-                    # scheme, param = get_authorization_scheme_param(token)
-            headers = {"Authorization": "Bearer {}".format(tokenRAcceso)}
-            print(headers)
-            response = requests.get(url, headers=headers)
-            print(response)
+            
             result = json.loads(str(response.text))
             users = result["data"]
             user= users[0]

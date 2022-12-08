@@ -54,6 +54,34 @@ router = APIRouter()
 ##EndPoints APP
 # router.include_router(userRouter, prefix="/user", tags=["Users"])
 
+def buscarTrabajdor_and_Estudiante(ci: str,area: str):
+
+    reqUrl = "https://sigenu.cujae.edu.cu/sigenu-ldap-cujae/ldap/search-all"
+
+    headersList = {
+    "Accept": "*/*",
+    "User-Agent": "Thunder Client (https://www.thunderclient.com)",
+    "Authorization": "Basic ZGlzZXJ0aWMubGRhcDpkaXNlcnRpYyoyMDIyKmxkYXA=",
+    "Content-Type": "application/json" 
+    }
+    payload = json.dumps({
+    "identification": ci,
+    "name": "",
+    "lastname": "",
+    "surname": "",
+    "email": "",
+    "area": area
+    })
+
+    response = requests.request("POST", reqUrl, data=payload,  headers=headersList)
+    
+    result = json.loads(str(response.text))
+    if(bool(result)):
+        return result
+    else:
+        print("no se encontro el Usuario en esa area")
+        return None
+
 
 @router.get("/crear_carnet/{area}/{ci}")
 async def crear_carnet(area,ci, request: Request, db: Session = Depends(get_db)):
@@ -62,76 +90,24 @@ async def crear_carnet(area,ci, request: Request, db: Session = Depends(get_db))
     print(ci)
     try:
         list_tipo_motivos = list_motivos(db=db)
-        carnet_user = get_carnet_by_person(person_ci=ci, db=db)
+        carnet_user = get_carnet_by_person(ci, db)
         print(carnet_user)
-        person_carnet = retreive_person(ci=ci,db=db)
+        person_carnet = retreive_person(ci,db)
         print(person_carnet)
         token = request.cookies.get("access_token")
         scheme, param = get_authorization_scheme_param(token)
        
 
+        usuario= buscarTrabajdor_and_Estudiante(ci,area)
+       
+        if usuario != None :         
+            user= usuario[0]
 
-        reqUrl = "https://sigenu.cujae.edu.cu/sigenu-ldap-cujae/ldap/search-all"
-
-        headersList = {
-        "Accept": "*/*",
-        "User-Agent": "Thunder Client (https://www.thunderclient.com)",
-        "Authorization": "Basic ZGlzZXJ0aWMubGRhcDpkaXNlcnRpYyoyMDIyKmxkYXA=",
-        "Content-Type": "application/json" 
-            }
-
-        payload = json.dumps({
-        "identification": "97041207064",
-        "name": "",
-        "lastname": "",
-        "surname": "",
-        "email": "",
-        "area": "OU=DG de ICI,OU=Area Central,DC=cujae,DC=edu,DC=cu"
-        })
-
-        response = requests.request("POST", reqUrl, data=payload,  headers=headersList)
-
-        if response.status_code == 401:
-            print("entro al if 401")
-            
-            result = json.loads(str(response.text))
-            users = result["data"]
-            user= users[0]
-                    # form.__dict__.update(users = users)
-                    # context =
-                    # print(responseA.context)
-                    # responseB = responses.RedirectResponse(
-                    #     f"/resultado/{users}", status_code=status.HTTP_302_FOUND
-                    # )
             responseB= templates.TemplateResponse("general_pages/crear_carnet.html",{"request": request, "list_tipo_motivos": list_tipo_motivos, 'user':user, 'area':area, 'carnet_user':carnet_user, 'person_carnet':person_carnet})    
-            responseB.set_cookie(
-                        key="access_token",
-                        value=f"Bearer {tokenRAcceso}",
-                        httponly=True,
-                    )
-            responseB.set_cookie(
-                        key="refresh_token",
-                        value=f"Bearer {tokenRRefresh}",
-                        httponly=True,
-                    )
-        else:
-            result = json.loads(str(response.text))
-                    # print(result["data"])
-            users = result["data"]
-            user = users[0]
-        response = templates.TemplateResponse(
-            "general_pages/crear_carnet.html",
-            {"request": request, "list_tipo_motivos": list_tipo_motivos, 'user':user, 'area':area, 'carnet_user':carnet_user, 'person_carnet': person_carnet},
-        )
-        user_response = get_current_user_from_token(
-            response=response, request=request, token=param, db=db
-        )
-        usuario_actual: Usuario = user_response["user"]
-        print("El usuario actual es", usuario_actual)
-        if (
-            usuario_actual.rol_usuario == "Carnetizador"
-            or usuario_actual.rol_usuario == "SuperAdmin"
-        ):
+                     
+            current_user: Usuario = get_current_user_from_token(param, db)
+           
+            if ( current_user.rol_usuario == "Carnetizador" or current_user.rol_usuario == "SuperAdmin"):
 
 
             
@@ -177,102 +153,98 @@ async def crear_carnet(area,ci, request: Request, db: Session = Depends(get_db))
             # # else:
             # # return responses.RedirectResponse("", status_code=status.HTTP_302_FOUND)
             # # endif
-            return user_response["response"]
+                return responseB
     except Exception as e:
         print(e)
         return responses.RedirectResponse("/login", status_code=status.HTTP_302_FOUND)
 
 @router.post("/crear_carnet/{area}/{ci}")
 async def crear_carnet_post(area,ci,request:Request, db: Session = Depends(get_db)):
-    print("entro al post")
+    print("Comenzamos a crear un carnet")
     form = crearCarnetForm(request)
     await form.load_data()
     if await form.is_valid():
-        try: 
-            print(ci)
-            print("entro al if del form")
-        # print(form.ci.value())
-            print(form.folio)
-            print(form.folio_desactivo)
-            ci=ci
-            person=retreive_person(ci=ci,db=db)
-            carnet_anterior=get_carnet_by_person(person_ci=ci,db=db)
-            if carnet_anterior is not None:
-                form.folio_desactivo=carnet_anterior.folio
-                form.area_anterior = person.area
+        try:
+            usuario= buscarTrabajdor_and_Estudiante(ci,area)
+            user= usuario[0]   
+            print("se encontro el usuario")
+            person=retreive_person(ci,db)
+            carnet_anterior=get_carnet_by_person(ci,db)
+
+            form.ci= user['identification']
+            form.area= user['area']
+            
+           
+            if(user["personType"] == "Student"):
+                form.annoEstudiantePersona= user['studentYear']
+                form.tipoPersona = "Estudiante"
+            else:
+                form.tipoPersona = "Trabajador"
+            
+            form.nombre= user['name']+" "+user['lastname']+" "+user['surname']
+            
+            
+            print("===========Datos del usuario======================")
+            print("ci: ",form.ci)
+            print("folio ",form.folio)
+            print("folio desactivo ",form.folio_desactivo)
+            print("area ",form.area)
+            print("area anterior ",form.area_anterior)
+            print("comprobante motivo ",form.comprobante_motivo)
+            print("estado ",form.estado)
+            print("anno estudiante ",form.annoEstudiantePersona)
+            print("nombre ",form.nombre)
+            print("rol ",form.rol)
+            print("tipo de persona ",form.tipoPersona)
+            print("rol anterior",form.rol_anterior)
+            print("rol anterior",form.tipoMotivo)
+
+            print("============== Estos son los datos que se recogieron==========")
+
+            if person is None:
+                print("no existe la persona en el registro")
+                print("se registrara") 
+                
+                person_a = PersonCreate(**form.__dict__)
+                person_a = create_new_person(person_a, db)
+                print("Impriemiendo la persona Creada------")
+                print("persona: ",person_a.nombre)
+                print("persona: ", person_a.area)
+                print("persona: ", person_a.ci)
+                print("persona: ", person_a.is_activa)
+                print("persona: ", person_a.rol)
+
+            else:
+                person_a = update_person_by_ci(ci, person,db)
+
+            if carnet_anterior is not None: # si tiene carnet anterior
+                print("existia un carnet anterior y se actualizara")
+                form.folio_desactivo= carnet_anterior.folio 
+                form.area_anterior= person.area
                 form.rol_anterior= person.rol
+                
                 carnet_eliminado = CarnetEliminadoCreate(**form.__dict__)
                 carnet_eliminado = create_new_carnet_eliminado(carnet_eliminado=carnet_eliminado, db=db, person_ci=ci)
+                print("se actualizo el nuevo carnet y se guardo el viejo")
+            else:
+                print("El usuario no tenia carnet activo")
+                carnet_activo = CarnetActivoCreate(**form.__dict__)
+                carnet_activo = create_new_carnet_activo(carnet_activo=carnet_activo, db=db, person_ci=ci,tipo_motivo_id=form.tipoMotivo)
+            
+       
+                  
+                    
+            
+            print("Carne Realizado correctamente")   
+            #responseB= templates.TemplateResponse("general_pages/carnets/carnets_pendientes.html",{"request": request, "carnets": carnets, "persons":persons, "motivos":motivos})    
+                
+                        
 
-            print("imprimiendo persona")
-            print(person)
-            token = request.cookies.get("access_token")
-            scheme, param = get_authorization_scheme_param(token)
-            print(token)
-            print(scheme)
-            headers = {"Authorization": "Bearer {}".format(param)}
-            url = (settings.API_AUDIENCE
-                    + "tree/OU="
-                    + area
-                    + ",DC=cujae,DC=edu,DC=cu?filters=cUJAEPersonDNI:"
-                    + ci
-                  )
-            response = requests.get(url, headers=headers)
-            print(response)
-            if response.status_code == 401:
-               print("entro al if 401")
-               tokenR = refreshToken(request=request)
-               print("lo q devuelve el refresh", tokenR)
-               tokenRAcceso = tokenR["access_token"]
-               tokenRRefresh = tokenR["refresh_token"]
-               print(tokenRAcceso)
-                    # token = request.cookies.get("access_token")
-                    # scheme, param = get_authorization_scheme_param(token)
-               headers = {"Authorization": "Bearer {}".format(tokenRAcceso)}
-               print(headers)
-               response = requests.get(url, headers=headers)
-               print(response)
-               result = json.loads(str(response.text))
-               users = result["data"]
-               user= users[0]
-               carnets = lista_solicitados(db=db)
-               persons = list_persons(db=db)
-               motivos = list_motivos(db=db)
-               responseB= templates.TemplateResponse("general_pages/carnets/carnets_pendientes.html",{"request": request, "carnets": carnets, "persons":persons, "motivos":motivos})    
-               responseB.set_cookie(
-                        key="access_token",
-                        value=f"Bearer {tokenRAcceso}",
-                        httponly=True,
-                    )
-               responseB.set_cookie(
-                        key="refresh_token",
-                        value=f"Bearer {tokenRRefresh}",
-                        httponly=True,
-                    )
-            else:
-                result = json.loads(str(response.text))
-                    # print(result["data"])
-                users = result["data"]
-                user = users[0]
-                form.ci = ci
-                form.annoEstudiantePersona= user['cUJAEStudentYear']
-                form.area= area
-                form.nombre = user['name']
-                person_a = PersonCreate(**form.__dict__)
-            if(person == None):
-                person_a = create_new_person(person=person_a, db=db)
-                print(form.tipoMotivo)
-            else:
-                print("actualizar person")
-                person_a = update_person_by_ci(ci=ci, person=person_a,db=db)
-                print("se detuvo aqui en person")
-            # nombre_motivo = form.tipoMotivo
-            # tipo_motivo= retreive_motivo_by_name(nombre_motivo=nombre_motivo, db=db)
-            # print(tipo_motivo)
-            carnet_activo = CarnetActivoCreate(**form.__dict__)
-            print("se deturvo en create")
-            carnet_activo = create_new_carnet_activo(carnet_activo=carnet_activo, db=db, person_ci=ci,tipo_motivo_id=form.tipoMotivo)
+                
+            
             return responses.RedirectResponse("/carnets/solicitados", status_code=status.HTTP_302_FOUND)
+        
         except Exception as e:
             print(e)
+            print("hubo un error a la hora de crear u carnet")
         return responses.RedirectResponse("/login", status_code=status.HTTP_302_FOUND)

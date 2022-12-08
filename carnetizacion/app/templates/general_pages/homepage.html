@@ -73,7 +73,7 @@
                         <div class="mb-3">
                             <label class="my-1 me-2" for="inlineFormCustomSelectPref">Area</label>
                         
-                            <select type="form-select" class="form-control" id="areaBuscarPersona" name="areaBuscarPersona" aria-label="Default select example" >
+                            <select type="form-select" class="form-control" id="areaBuscarPersona" name="areaBuscarPersona" aria-label="Default select example"  value="areaBuscarPersona" >
                                
                                 <option selected>Seleccione</option>
                                 <script>
@@ -83,10 +83,11 @@
                                     var count  = JSON.parse("{{total_areas}}");
                                     var select = document.getElementById('areaBuscarPersona');
                                     for (var i = 0; i < count; i++){
-                                    select.options[select.options.length] = new Option(arr[i], i);
+                                    select.options[select.options.length] = new Option(arr[i],arr[i]);
                                     }
                                 </script>
-                            </select>         
+                            </select> 
+                            <small id="emailHelp" class="form-text text-gray">{{errorArea}}</small>        
                         </div>
                         
 
@@ -181,16 +182,16 @@
                                             <input class="form-check-input Checklist" type="checkbox" value="{{ user['cUJAEPersonDNI']}}"  name="checkpersonas" id="checkpersonas">
                                         </div>
                                     </td> -->
-                                    <td>{{ user["cUJAEPersonDNI"] }}</td>
+                                    <td>{{ user['identification'] }}</td>
                                     <!-- <td>{{ user }}</td> -->
-                                    <td>{{ user["name"] }}</td>
-                                    {% if user["cUJAEPersonType"] == "Student" -%}
+                                    <td>{{ user['name']}}</td>
+                                    {% if user['personType'] == "Student" -%}
                                     <td>Estudiante</td>
-                                    <td>{{ user["cUJAEStudentYear"] }}</td>
-                                    {%- elif user["cUJAEPersonType"] == "Worker" -%}
+                                    <td>{{ user['studentYear'] }}</td>
+                                    {%- elif user['personType'] == "Worker" -%}
                                     <td>Trabajador</td>
                                     {%- endif %}
-                                    <td><a href="/crear_carnet/{{area}}/{{user['cUJAEPersonDNI'] }}" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit user">
+                                    <td><a href="/crear_carnet/{{area}}/{{user['identification'] }}" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit user">
                                         Crear carnet
                                       </a> </td>
                                     <!-- <td><a href="" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit user">

@@ -29,6 +29,7 @@ router = APIRouter()
 
 @router.get("/carnets/solicitados")
 async def carnet_solicitado(request: Request, db: Session = Depends(get_db)):
+    print("estoy en carnet Solicitados")
     try:
         token = request.cookies.get("access_token")
         scheme, param = get_authorization_scheme_param(token)

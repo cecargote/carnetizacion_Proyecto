@@ -79,7 +79,25 @@ def buscarAreas_por_name(text: str, areaID):
             break
 
     return area
+def buscar_personas_por_areas(area: str):
+    
+        reqUrl = "https://sigenu.cujae.edu.cu/sigenu-ldap-cujae/ldap/persons?area=OU=DG de ICI,OU=Area Central,DC=cujae,DC=edu,DC=cu"
 
+        headersList = {
+            "Accept": "*/*",
+            "User-Agent": "Thunder Client (https://www.thunderclient.com)",
+            "Authorization": "Basic ZGlzZXJ0aWMubGRhcDpkaXNlcnRpYyoyMDIyKmxkYXA=",
+            "Content-Type": "application/json" 
+            }
+
+        payload = json.dumps({
+        "area":area
+        })
+
+        response = requests.request("GET", reqUrl, data=payload,  headers=headersList)
+        users =  json.loads(str(response.text))
+        return users
+        
 def buscarTrabajdor_and_Estudiante(ci: str,area: str):
 
     reqUrl = "https://sigenu.cujae.edu.cu/sigenu-ldap-cujae/ldap/search-all"
@@ -195,7 +213,7 @@ async def home(request: Request):
                         users= [usuario[0]]
                         print(users)
                         responseTrabajador= templates.TemplateResponse("general_pages/homepage.html",
-                            {'request':request, 'users':users, 'area':area, "lista_areas" :lista_areas,
+                            {'request':request, 'users':users, 'area':form.areaBuscarPersona, "lista_areas" :lista_areas,
                             "total_areas": total_areas
                             })
                         return responseTrabajador
@@ -210,16 +228,39 @@ async def home(request: Request):
                 })
             return response
 
+    elif form.is_carntet_x_lotes() :
+        print("Estoy en carnets por lotes")
+        area = buscarAreas_por_name(buscarAreas(),form.areaBuscarPersona)
+        tipo = form.tipoBuscarPersona
+
+        userstemp = buscar_personas_por_areas(area)
+        listResult = []
+        print("Tipo ", tipo)
+        for temp in userstemp:
+            tipo_temp = temp['personType']
+            if tipo_temp == tipo:
+                listResult.append(temp)
+            elif tipo_temp == tipo:
+                listResult.append(temp)
+        
+        
+
+        responses_carnet_x_lotes= templates.TemplateResponse("general_pages/homepage.html",
+                            {'request':request, 'users':listResult, 'area':form.areaBuscarPersona, "lista_areas" :lista_areas,
+                            "total_areas": total_areas
+                            })
+        return responses_carnet_x_lotes
+
+
     else:       
         errorArea= form.errorArea
         errorCI = form.errorCI
         response = templates.TemplateResponse(
-            "general_pages/homepage.html",
-             {"request": request,
-               "total_areas": total_areas,
+                "general_pages/homepage.html",
+                {"request": request,
+                "total_areas": total_areas,
                 "lista_areas":lista_areas,
                 "errorArea": errorArea,
                 "errorCI": errorCI })
-    
         return response
       

@@ -13,6 +13,7 @@ class BuscarPersonaForm:
         self.ciBuscarPersona: Optional[str]
         self.areaBuscarPersona: Optional[str]
         self.tipoBuscarPersona: Optional[str]
+        self.errorTipo: Optional[str]
         self.Check1: bool
         self.Check2: bool
         self.Check3: bool
@@ -33,11 +34,25 @@ class BuscarPersonaForm:
         if self.areaBuscarPersona == "Seleccione":
             self.errorArea = "*Este campo es obligatorio"
             result = False
-    
-        if self.ciBuscarPersona and not len(self.ciBuscarPersona) == 11:
+       
+        if  not len(self.ciBuscarPersona) == 11:
             self.errorCI = "*Un Carnet de Identidad no valido"
             result = False
         #if self.tipoBuscarPersona == "Seleccione":
         #    result = False
 
         return result
+    
+    def is_carntet_x_lotes(self):
+        result = True
+        if self.areaBuscarPersona == "Seleccione":
+            self.errorArea = "*Este campo es obligatorio"
+            result = False
+        if self.tipoBuscarPersona == "Seleccione":
+            self.errorTipo = "*Este campo es obligatorio"
+            result = False
+
+        return result
+
+
+     

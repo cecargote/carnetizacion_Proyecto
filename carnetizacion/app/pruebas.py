@@ -61,3 +61,29 @@ print(result[0]['name'])
 if prueba is not None:
     print("es none")
 print(bool(result))
+
+
+reqUrl = "https://sigenu.cujae.edu.cu/sigenu-ldap-cujae/ldap/persons?area=OU=DG de ICI,OU=Area Central,DC=cujae,DC=edu,DC=cu"
+
+headersList = {
+            "Accept": "*/*",
+            "User-Agent": "Thunder Client (https://www.thunderclient.com)",
+            "Authorization": "Basic ZGlzZXJ0aWMubGRhcDpkaXNlcnRpYyoyMDIyKmxkYXA=",
+            "Content-Type": "application/json" 
+            }
+
+payload = json.dumps({
+        "area":area
+        })
+
+response = requests.request("GET", reqUrl, data=payload,  headers=headersList)
+userstemp =  json.loads(str(response.text))
+listReturn= []
+for temp in userstemp:
+            if temp['personType']== "Student":
+                listReturn.append(temp)
+
+print("lis",len(listReturn))
+print("usertemp",len(userstemp))
+
+

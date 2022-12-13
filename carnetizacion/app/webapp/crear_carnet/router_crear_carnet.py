@@ -81,13 +81,40 @@ def buscarTrabajdor_and_Estudiante(ci: str,area: str):
     else:
         print("no se encontro el Usuario en esa area")
         return None
+def buscarAreas_por_name(text: str, areaID):
+    result = json.loads(str(text))
+    area = ""
+    for iter in result:
+        if iter['name'] == areaID:       
+            area = iter['distinguishedName']
+            break
 
+    return area
+def buscarAreas():
+    import requests
 
+    reqUrl = "https://sigenu.cujae.edu.cu/sigenu-ldap-cujae/ldap/areas"
+
+    headersList = {
+    "Accept": "*/*",
+    "User-Agent": "Thunder Client (https://www.thunderclient.com)",
+    "Authorization": "Basic ZGlzZXJ0aWMubGRhcDpkaXNlcnRpYyoyMDIyKmxkYXA=" 
+    }
+
+    payload = ""
+
+    response = requests.request("GET", reqUrl, data=payload,  headers=headersList)
+    
+    return response.text
 @router.get("/crear_carnet/{area}/{ci}")
 async def crear_carnet(area,ci, request: Request, db: Session = Depends(get_db)):
     print("es crear carnet")
-    print(area)
+    
     print(ci)
+    
+    print(area)
+    areatemp = buscarAreas_por_name(buscarAreas(),area)
+
     try:
         list_tipo_motivos = list_motivos(db=db)
         carnet_user = get_carnet_by_person(ci, db)
@@ -98,7 +125,7 @@ async def crear_carnet(area,ci, request: Request, db: Session = Depends(get_db))
         scheme, param = get_authorization_scheme_param(token)
        
 
-        usuario= buscarTrabajdor_and_Estudiante(ci,area)
+        usuario= buscarTrabajdor_and_Estudiante(ci,areatemp)
        
         if usuario != None :         
             user= usuario[0]
@@ -161,11 +188,12 @@ async def crear_carnet(area,ci, request: Request, db: Session = Depends(get_db))
 @router.post("/crear_carnet/{area}/{ci}")
 async def crear_carnet_post(area,ci,request:Request, db: Session = Depends(get_db)):
     print("Comenzamos a crear un carnet")
+    areatemp=  buscarAreas_por_name(buscarAreas(),area)
     form = crearCarnetForm(request)
     await form.load_data()
     if await form.is_valid():
         try:
-            usuario= buscarTrabajdor_and_Estudiante(ci,area)
+            usuario= buscarTrabajdor_and_Estudiante(ci,areatemp)
             user= usuario[0]   
             print("se encontro el usuario")
             person=retreive_person(ci,db)

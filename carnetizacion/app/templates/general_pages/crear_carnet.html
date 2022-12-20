@@ -76,17 +76,18 @@
                         <div class="mb-4">
                             <label class="my-1 me-2" for="inlineFormCustomSelectPref">Rol</label>
                             <!-- <input disabled type="text" class="form-control" id="rolBuscarPersona" name="rolBuscarPersona" value=""> -->
-                            <select class="form-select" id="rol" aria-label="Default select example" name="rol" value="{{rol}}">
-                                <option selected>Seleccione</option>
+                            
+    
                                 {% if user["personType"] == "Student" -%}
-                                <option value="Estudiante externo">Estudiante externo</option>
-                                <option value="Estudiante becado nacional">Estudiante becado nacional</option>
-                                <option value="Estudiante extranjero">Estudiante extranjero</option>
-                            {%- elif user["personType"] == "Worker" -%}
-                                <option value="Consejo universitario">Consejo universitario</option>
-                                <option value="Cuadro">Cuadro</option>
-                                <option value="Trabajador Docente">Trabajador Docente</option>
-                                <option value="Trabajador No Docente">Trabajador No Docente</option>
+
+                                <input disabled type="text" class="form-control" id="rol" name="rol" value={{area}}>
+                            
+                                {%- elif user["personType"] == "Worker" -%}
+                                {% if user["personTeacher"] == "TRUE" -%}
+                            <input disabled type="text" class="form-control" id="rol" name="rol" value={{area}}>
+                                {% elif user["personTeacher"] == "FALSE" -%}
+                            <input disabled type="text" class="form-control" id="rol" name="rol" value={{area}}>
+                            {%- endif %}
                             {%- endif %}
                             </select>
                         </div>
@@ -98,8 +99,10 @@
                         <div class="mb-4">
                             <label class="my-1 me-2" for="inlineFormCustomSelectPref">Tipo de Persona</label>
                             {% if user["personType"] == "Student" -%}
+
                                 <input disabled type="text" class="form-control" id="tipoPersona" name="tipoPersona" value="Estudiante">
-                            {%- elif user["personType"] == "Worker" -%}
+                            
+                                {%- elif user["personType"] == "Worker" -%}
                                 <input disabled type="text" class="form-control" id="tipoPersona" name="tipoPersona" value="Trabajador">
                             {%- endif %}
                         </div>                       

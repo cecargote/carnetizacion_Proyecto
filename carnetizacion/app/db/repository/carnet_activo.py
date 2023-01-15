@@ -19,3 +19,11 @@ def lista_solicitados(db: Session):
 def get_carnet_by_person(person_ci: str,db: Session):
     carnet = db.query(CarnetActivo).filter(CarnetActivo.person_ci == person_ci).first()
     return carnet
+
+def lista_hechos(db: Session):
+    carnets = db.query(CarnetActivo).filter(CarnetActivo.estado == "Hecho").order_by(desc(CarnetActivo.id))
+    return carnets
+
+def lista_entregados(db: Session):
+    carnets = db.query(CarnetActivo).filter(CarnetActivo.estado == "Entregado").order_by(desc(CarnetActivo.id))
+    return carnets

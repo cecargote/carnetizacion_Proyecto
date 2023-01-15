@@ -1,0 +1,71 @@
+{% extends "shared/base_homepages.html" %}
+
+    {% block content %}
+    <section class="section-header overflow-hidden pt-7 pt-lg-6 pb-9 pb-lg-0 bg-primary text-white">
+    </section>
+
+    <div class="section section-sm pb-0 mb-n4">
+      <div class="container">
+          <div class="row justify-content-center">
+              <h1 class="text-center">Carnets Hechos</h3>
+          </div>
+      </div>
+  </div>
+
+    <div class="section section-md">
+      <div class="container">
+          <div class="row justify-content-center">
+              <div class="col-lg-12">
+                  <div class="mb-5">
+                      <div class="mb-4">
+                          <span class="h5"></span>
+                      </div>
+                      <table class="table table-hover">
+                          <tr>
+                              <!-- <th scope="col" >
+                                  <div class="form-check">
+                                      <label class="form-check-label" for="defaultCheck1">Seleccionar Todo</label>
+                                      <input class="form-check-input" type="checkbox" value="seleccionar_todo" name="seleccionar_todo" id="seleccionar_todo" onchange="SeleccionarTodo()">
+                                  </div>
+                              </th> -->
+                              <th scope="col" id="class3">Folio</th>
+                              <th scope="col" id="teacher3">Carnet de identidad</th>
+                              <th scope="col" id="teacher3">Nombre</th>
+                              <th scope="col" id="females3">Area</th>
+                              <th scope="col">Rol</th>
+                              <th scope="col">Tipo de motivo</th>
+                              <th scope="col"></th>
+                              <th scope="col"></th>
+                          </tr>
+                          <tr>
+                            {% for carnet in carnets %}
+                              <td>{{ carnet.folio }}</td>
+                              <td>{{ carnet.person_ci }}</td>
+                              {% for person in persons %}
+                                {% if carnet.person_ci == person.ci -%}
+                                  <td>{{ person.nombre }}</td>
+                                  <td>{{ person.area }}</td>
+                                  <td>{{ person.rol }}</td>
+                                {%- endif %}
+                               {% endfor %}
+                               {% for motivo in motivos %}
+                                  {% if carnet.tipo_motivo_id == motivo.id_motivo -%}
+                                    <td>{{ motivo.nombre_motivo }}</td>
+                                  {%- endif %}
+                                {% endfor %}  
+
+                                </a></button></td>
+                              <!-- <td><a href="" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit user">
+                                  Imprimir
+                                  </a></td> --> 
+                          </tr>
+                          {% endfor %}
+                      </table>
+                  </div>
+                     </div>
+          </div>
+      </div>
+  </div>
+  
+    
+{% endblock %}

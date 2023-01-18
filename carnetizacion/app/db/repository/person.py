@@ -19,10 +19,12 @@ def list_persons(db: Session):
     persons = db.query(Person).all()
     return persons
 
+
 def update_person_by_ci(ci: str, person: PersonCreate, db: Session):
     exist_person = db.query(Person).filter(Person.ci == ci)
     if not exist_person.first():
         return 0
+    
     exist_person.update(person.__dict__)
     db.commit()
     return 1

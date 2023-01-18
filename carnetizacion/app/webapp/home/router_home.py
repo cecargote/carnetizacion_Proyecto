@@ -36,396 +36,231 @@ async def home(request: Request, db: Session = Depends(get_db)):
     try:
         token = request.cookies.get("access_token")
         scheme, param = get_authorization_scheme_param(token)
-        print(token)
-        print(scheme)
+        
+        lista_areas, count= listaAreas(buscarAreas())
+        total_areas= count
+
         response = templates.TemplateResponse(
-            "general_pages/homepage.html", {"request": request}
-        )
-        user_response = get_current_user_from_token(
-            response=response, request=request, token=param, db=db
-        )
-        usuario_actual: Usuario = user_response["user"]
-        print("El usuario actual es", usuario_actual)
+            "general_pages/homepage.html", {"request": request,  "total_areas": total_areas, "lista_areas":lista_areas})
+        
+        try:
+            current_user: Usuario = get_current_user_from_token(param, db)
+        except HTTPException:
+            print("Error al cargar el usuario, sera enviado al LOGIN")
+            return  responses.RedirectResponse("login", status_code=status.HTTP_401_UNAUTHORIZED)
         if (
-            usuario_actual.rol_usuario == "Carnetizador"
-            or usuario_actual.rol_usuario == "SuperAdmin"
+            current_user.rol_usuario == "Carnetizador"
+            or current_user.rol_usuario == "SuperAdmin"
         ):
-            return user_response["response"]
+            return response
 
     except Exception as e:
         print(e)
-        print("entro error")
+        print("Error Home")
         return responses.RedirectResponse("/login", status_code=status.HTTP_302_FOUND)
 
+def listaAreas(text : str):
+    result = json.loads(str(text))          
+    lista=""
+    count =0
+    for iter in result:
+        iter['name']
+        count= count +1
+        lista= lista +iter['name']+ ","
+    
+    return lista, count
 
+def buscarAreas_por_name(text: str, areaID):
+    result = json.loads(str(text))
+    area = ""
+    for iter in result:
+        if iter['name'] == areaID:       
+            area = iter['distinguishedName']
+            break
+
+    return area
+def buscar_personas_por_areas(area: str):
+    
+        reqUrl = "https://sigenu.cujae.edu.cu/sigenu-ldap-cujae/ldap/persons?area=OU=DG de ICI,OU=Area Central,DC=cujae,DC=edu,DC=cu"
+
+        headersList = {
+            "Accept": "*/*",
+            "User-Agent": "Thunder Client (https://www.thunderclient.com)",
+            "Authorization": "Basic ZGlzZXJ0aWMubGRhcDpkaXNlcnRpYyoyMDIyKmxkYXA=",
+            "Content-Type": "application/json" 
+            }
+
+        payload = json.dumps({
+        "area":area
+        })
+
+        response = requests.request("GET", reqUrl, data=payload,  headers=headersList)
+        users =  json.loads(str(response.text))
+        return users
+        
+def buscarTrabajdor_and_Estudiante(ci: str,area: str):
+
+    reqUrl = "https://sigenu.cujae.edu.cu/sigenu-ldap-cujae/ldap/search-all"
+
+    headersList = {
+    "Accept": "*/*",
+    "User-Agent": "Thunder Client (https://www.thunderclient.com)",
+    "Authorization": "Basic ZGlzZXJ0aWMubGRhcDpkaXNlcnRpYyoyMDIyKmxkYXA=",
+    "Content-Type": "application/json" 
+    }
+    payload = json.dumps({
+    "identification": ci,
+    "name": "",
+    "lastname": "",
+    "surname": "",
+    "email": "",
+    "area": area
+    })
+
+    response = requests.request("POST", reqUrl, data=payload,  headers=headersList)
+    
+    result = json.loads(str(response.text))
+    if(bool(result)):
+        return result
+    else:
+        print("no se encontro el Usuario en esa area")
+        return None
+
+
+
+
+def buscarAreas():
+    import requests
+
+    reqUrl = "https://sigenu.cujae.edu.cu/sigenu-ldap-cujae/ldap/areas"
+
+    headersList = {
+    "Accept": "*/*",
+    "User-Agent": "Thunder Client (https://www.thunderclient.com)",
+    "Authorization": "Basic ZGlzZXJ0aWMubGRhcDpkaXNlcnRpYyoyMDIyKmxkYXA=" 
+    }
+
+    payload = ""
+
+    response = requests.request("GET", reqUrl, data=payload,  headers=headersList)
+    
+    return response.text
+    
+    
 @router.post("/")
 async def home(request: Request):
     form = BuscarPersonaForm(request)
+    lista_areas, count= listaAreas(buscarAreas())
+    total_areas= count
+    
     await form.load_data()
-    # print(request.json())
-    if form.is_valid():
+    value = form.is_valid()
+    if value:
         try:
             token = request.cookies.get("access_token")
             scheme, param = get_authorization_scheme_param(token)
-            headers = {"Authorization": "Bearer {}".format(param)}
-            print("Entoooo")
-            area=form.areaBuscarPersona
-            if form.ciBuscarPersona:
-                print("ciii")
-                url = (
-                    settings.API_AUDIENCE
-                    + "tree/OU="
-                    + area
-                    + ",DC=cujae,DC=edu,DC=cu?filters=cUJAEPersonDNI:"
-                    + form.ciBuscarPersona
-                )
-            if not form.ciBuscarPersona and form.tipoBuscarPersona != "Seleccione":
-                print("tipo")
-                print(form.Check1)
-                checkTrue = form.Check1 or form.Check2 or form.Check3 or form.Check4
-                print(checkTrue)
-                if form.tipoBuscarPersona == "Student" and checkTrue:
-                    check401Check1 = False
-                    check401Check2 = False
-                    check401Check3 = False
-                    check401Check4 = False
-                    print("Student")
-                    if form.Check1:
-                        urlCheck1 = (
-                            settings.API_AUDIENCE
-                            + "tree/OU="
-                            + area
-                            + ",DC=cujae,DC=edu,DC=cu?filters=cUJAEPersonType:"
-                            + form.tipoBuscarPersona
-                            + ",cUJAEStudentYear:"
-                            + form.Check1
-                        )
-                        responseCheck1 = requests.get(urlCheck1, headers=headers)
-                        if responseCheck1.status_code == 401:
-                            check401Check1 = True
-                            tokenR = refreshToken(request=request)
-                            print("lo q devuelve el refresh", tokenR)
-                            tokenRAcceso = tokenR["access_token"]
-                            tokenRRefresh = tokenR["refresh_token"]
-                            print(tokenRAcceso)
-                            # token = request.cookies.get("access_token")
-                            # scheme, param = get_authorization_scheme_param(token)
-                            headers = {
-                                "Authorization": "Bearer {}".format(tokenRAcceso)
-                            }
-                            print(headers)
-                            responseCheck1 = requests.get(urlCheck1, headers=headers)
-                            print(responseCheck1)
-                            resultCheck1 = json.loads(str(responseCheck1.text))
-                            users = resultCheck1["data"]
+            
+            area = buscarAreas_por_name(buscarAreas(),form.areaBuscarPersona)
+            print("area",area)
+            print ("carnet")
+            print(form.ciBuscarPersona)
+            ci = form.ciBuscarPersona
+            if  area != "":
+                print("Area Encontrada")
+                usuario  = buscarTrabajdor_and_Estudiante(ci,area)               
+                if usuario is not None:
+                    
+                    checkTrue = form.Check1 or form.Check2 or form.Check3 or form.Check4
+                    
+                    if form.tipoBuscarPersona == "Student" and checkTrue:
+                        if form.Check1:
+                            print("estudiante 1 er año")
+                            users= [usuario[0]]
+                            responseEstudiante= templates.TemplateResponse("general_pages/homepage.html",
+                            {'request':request, 'users':users, 'area': form.areaBuscarPersona, "lista_areas" :lista_areas,
+                            "total_areas": total_areas
+                            })
+                            return responseEstudiante
+                        if form.Check2:
+                            print("estudiante 2 do año")
+                            users= [usuario[0]]
+                            responseEstudiante= templates.TemplateResponse("general_pages/homepage.html",
+                            {'request':request, 'users':users, 'area':form.areaBuscarPersona, "lista_areas" :lista_areas,
+                            "total_areas": total_areas
+                            })
+                            return responseEstudiante
 
-                            # form.__dict__.update(users = users)
-                            # context =
-                            # print(responseA.context)
-                            if not form.Check2 and not form.Check3 and not form.Check4:
-                                # responseBCheck1 = responses.RedirectResponse(
-                                #     f"/resultado/{users}",
-                                #     status_code=status.HTTP_302_FOUND,
-                                # )
-                                responseBCheck1= templates.TemplateResponse("general_pages/homepage.html", {'request':request, 'users':users, 'area':area})
-                                responseBCheck1.set_cookie(
-                                    key="access_token",
-                                    value=f"Bearer {tokenRAcceso}",
-                                    httponly=True,
-                                )
-                                responseBCheck1.set_cookie(
-                                    key="refresh_token",
-                                    value=f"Bearer {tokenRRefresh}",
-                                    httponly=True,
-                                )
+                        if form.Check3:
+                            print("estudiante 3 er año")
+                            users= [usuario[0]]
+                            responseEstudiante= templates.TemplateResponse("general_pages/homepage.html",
+                            {'request':request, 'users':users, 'area':form.areaBuscarPersona, "lista_areas" :lista_areas,
+                            "total_areas": total_areas
+                            })
+                            return responseEstudiante
+                        if form.Check4:
+                            print("estudiante 4 to año")
+                            users= [usuario[0]]
+                            responseEstudiante= templates.TemplateResponse("general_pages/homepage.html",
+                            {'request':request, 'users':users, 'area':form.areaBuscarPersona, "lista_areas" :lista_areas,
+                            "total_areas": total_areas
+                            })
+                            return responseEstudiante
+                    else:
+                        print("Es trabajador")
+                        
+                        
+                        users= [usuario[0]]
+                        print(users)
+                        responseTrabajador= templates.TemplateResponse("general_pages/homepage.html",
+                            {'request':request, 'users':users, 'area':form.areaBuscarPersona, "lista_areas" :lista_areas,
+                            "total_areas": total_areas
+                            })
+                        return responseTrabajador
+        except HTTPException as e:
+            print("Error en Home")
+            print (e)
+            response = templates.TemplateResponse(
+            "general_pages/homepage.html",
+             {"request": request,
+               "total_areas": total_areas,
+                "lista_areas":lista_areas,
+                })
+            return response
 
-                                return responseBCheck1
+    elif form.is_carntet_x_lotes() :
+        print("Estoy en carnets por lotes")
+        area = buscarAreas_por_name(buscarAreas(),form.areaBuscarPersona)
+        tipo = form.tipoBuscarPersona
 
-                        else:
-                            resultCheck1 = json.loads(str(responseCheck1.text))
-                            print(resultCheck1)
-                            if not resultCheck1:
-                                raise HTTPException(
-                                    status_code=404, detail="User not found"
-                                )
-                            users = resultCheck1["data"]
-                    if form.Check2:
-                        urlCheck2 = (
-                            settings.API_AUDIENCE
-                            + "tree/OU="
-                            + area
-                            + ",DC=cujae,DC=edu,DC=cu?filters=cUJAEPersonType:"
-                            + form.tipoBuscarPersona
-                            + ",cUJAEStudentYear:"
-                            + form.Check2
-                        )
-                        if check401Check1:
-                            headers = {
-                                "Authorization": "Bearer {}".format(tokenRAcceso)
-                            }
-                        responseCheck2 = requests.get(urlCheck2, headers=headers)
-                        if responseCheck2.status_code == 401:
-                            check401Check2 = True
-                            tokenR = refreshToken(request=request)
-                            print("lo q devuelve el refresh", tokenR)
-                            tokenRAcceso = tokenR["access_token"]
-                            tokenRRefresh = tokenR["refresh_token"]
-                            print(tokenRAcceso)
-                            # token = request.cookies.get("access_token")
-                            # scheme, param = get_authorization_scheme_param(token)
-                            headers = {
-                                "Authorization": "Bearer {}".format(tokenRAcceso)
-                            }
-                            print(headers)
-                            responseCheck2 = requests.get(urlCheck2, headers=headers)
-                            resultCheck2 = json.loads(str(responseCheck2.text))
-                            if form.Check1:
-                                users.extend(resultCheck2["data"])
-                            else:
-                                users = resultCheck2["data"]
-                            # form.__dict__.update(users = users)
-                            # context =
-                            # print(responseA.context)
-                            if not form.Check3 and not form.Check4:
-                                # responseBCheck2 = responses.RedirectResponse(
-                                #     f"/resultado/{users}",
-                                #     status_code=status.HTTP_302_FOUND,
-                                # )
-                                responseBCheck2= templates.TemplateResponse("general_pages/homepage.html", {'request':request, 'users':users, 'area':area})
-                                responseBCheck2.set_cookie(
-                                    key="access_token",
-                                    value=f"Bearer {tokenRAcceso}",
-                                    httponly=True,
-                                )
-                                responseBCheck2.set_cookie(
-                                    key="refresh_token",
-                                    value=f"Bearer {tokenRRefresh}",
-                                    httponly=True,
-                                )
+        userstemp = buscar_personas_por_areas(area)
+        listResult = []
+        print("Tipo ", tipo)
+        for temp in userstemp:
+            tipo_temp = temp['personType']
+            if tipo_temp == tipo:
+                listResult.append(temp)
+            elif tipo_temp == tipo:
+                listResult.append(temp)
+        
+        
 
-                                return responseBCheck1
+        responses_carnet_x_lotes= templates.TemplateResponse("general_pages/homepage.html",
+                            {'request':request, 'users':listResult, 'area':form.areaBuscarPersona, "lista_areas" :lista_areas,
+                            "total_areas": total_areas
+                            })
+        return responses_carnet_x_lotes
 
-                        if responseCheck2.status_code != 502:
-                            resultCheck2 = json.loads(str(responseCheck2.text))
-                            print(resultCheck2)
-                            if not resultCheck2:
-                                raise HTTPException(
-                                    status_code=404, detail="User not found"
-                                )
-                            if form.Check1:
-                                # print(users)
-                                # print(resultCheck1)
-                                users.extend(resultCheck2["data"])
-                            else:
-                                users = resultCheck2["data"]
-                        print(responseCheck2)
-                    if form.Check3:
-                        urlCheck3 = (
-                            settings.API_AUDIENCE
-                            + "tree/OU="
-                            + area
-                            + ",DC=cujae,DC=edu,DC=cu?filters=cUJAEPersonType:"
-                            + form.tipoBuscarPersona
-                            + ",cUJAEStudentYear:"
-                            + form.Check3
-                        )
-                        if check401Check1 or check401Check2:
-                            headers = {
-                                "Authorization": "Bearer {}".format(tokenRAcceso)
-                            }
-                        responseCheck3 = requests.get(urlCheck3, headers=headers)
-                        if responseCheck3.status_code == 401:
-                            check401Check3 = True
-                            tokenR = refreshToken(request=request)
-                            print("lo q devuelve el refresh", tokenR)
-                            tokenRAcceso = tokenR["access_token"]
-                            tokenRRefresh = tokenR["refresh_token"]
-                            print(tokenRAcceso)
-                            # token = request.cookies.get("access_token")
-                            # scheme, param = get_authorization_scheme_param(token)
-                            headers = {
-                                "Authorization": "Bearer {}".format(tokenRAcceso)
-                            }
-                            print(headers)
-                            responseCheck3 = requests.get(urlCheck3, headers=headers)
-                            resultCheck3 = json.loads(str(responseCheck3.text))
-                            if form.Check1 or form.Check2:
-                                users.extend(resultCheck3["data"])
-                            else:
-                                users = resultCheck3["data"]
-                            # form.__dict__.update(users = users)
-                            # context =
-                            # print(responseA.context)
-                            if not form.Check4:
-                                # responseBCheck3 = responses.RedirectResponse(
-                                #     f"/resultado/{users}",
-                                #     status_code=status.HTTP_302_FOUND,
-                                # )
-                                responseBCheck3= templates.TemplateResponse("general_pages/homepage.html", {'request':request, 'users':users, 'area':area})
-                                responseBCheck3.set_cookie(
-                                    key="access_token",
-                                    value=f"Bearer {tokenRAcceso}",
-                                    httponly=True,
-                                )
-                                responseBCheck3.set_cookie(
-                                    key="refresh_token",
-                                    value=f"Bearer {tokenRRefresh}",
-                                    httponly=True,
-                                )
 
-                                return responseBCheck3
-                        if responseCheck3.status_code != 502:
-                            resultCheck3 = json.loads(str(responseCheck3.text))
-                            print(resultCheck3)
-                            if not resultCheck3:
-                                raise HTTPException(
-                                    status_code=404, detail="User not found"
-                                )
-                            if form.Check1 or form.Check2:
-                                users.extend(resultCheck3["data"])
-                            else:
-                                users = resultCheck3["data"]
-                        print(responseCheck3)
-                    if form.Check4:
-                        urlCheck4 = (
-                            settings.API_AUDIENCE
-                            + "tree/OU="
-                            + area
-                            + ",DC=cujae,DC=edu,DC=cu?filters=cUJAEPersonType:"
-                            + form.tipoBuscarPersona
-                            + ",cUJAEStudentYear:"
-                            + form.Check4
-                        )
-                        if check401Check1 or check401Check2 or check401Check3:
-                            headers = {
-                                "Authorization": "Bearer {}".format(tokenRAcceso)
-                            }
-                        responseCheck4 = requests.get(urlCheck4, headers=headers)
-                        if responseCheck4.status_code == 401:
-                            check401Check4 = True
-                            tokenR = refreshToken(request=request)
-                            print("lo q devuelve el refresh", tokenR)
-                            tokenRAcceso = tokenR["access_token"]
-                            tokenRRefresh = tokenR["refresh_token"]
-                            print(tokenRAcceso)
-                            # token = request.cookies.get("access_token")
-                            # scheme, param = get_authorization_scheme_param(token)
-                            headers = {
-                                "Authorization": "Bearer {}".format(tokenRAcceso)
-                            }
-                            print(headers)
-                            responseCheck4 = requests.get(urlCheck4, headers=headers)
-                            resultCheck4 = json.loads(str(responseCheck4.text))
-                            if form.Check1 or form.Check2 or form.Check3:
-                                users.extend(resultCheck4["data"])
-                            else:
-                                users = resultCheck4["data"]
-                            # form.__dict__.update(users = users)
-                            # context =
-                            # print(responseA.context)
-                            # responseBCheck4 = responses.RedirectResponse(
-                            #     f"/resultado/{users}", status_code=status.HTTP_302_FOUND
-                            # )
-                            responseBCheck4= templates.TemplateResponse("general_pages/homepage.html", {'request':request, 'users':users, 'area':area})
-                            responseBCheck4.set_cookie(
-                                key="access_token",
-                                value=f"Bearer {tokenRAcceso}",
-                                httponly=True,
-                            )
-                            responseBCheck4.set_cookie(
-                                key="refresh_token",
-                                value=f"Bearer {tokenRRefresh}",
-                                httponly=True,
-                            )
-                            return responseBCheck4
-                        if responseCheck4.status_code != 502:
-                            resultCheck4 = json.loads(str(responseCheck4.text))
-                            print(resultCheck4)
-                            if not resultCheck4:
-                                raise HTTPException(
-                                    status_code=404, detail="User not found"
-                                )
-                            if form.Check1 or form.Check2 or form.Check3:
-                                users.extend(resultCheck4["data"])
-                            else:
-                                users = resultCheck4["data"]
-                        print(responseCheck4)
-                else:
-                    url = (
-                        settings.API_AUDIENCE
-                        + "tree/OU="
-                        + area
-                        + ",DC=cujae,DC=edu,DC=cu?filters=cUJAEPersonType:"
-                        + form.tipoBuscarPersona
-                    )
-            if form.tipoBuscarPersona == "Seleccione" and not form.ciBuscarPersona:
-                print("Area")
-                url = settings.API_AUDIENCE + "tree/OU=" + area
-            print(form.Check1)
-            if (
-                not form.Check1
-                and not form.Check2
-                and not form.Check3
-                and not form.Check4
-            ):
-                print(url)
-                response = requests.get(url, headers=headers)
-                print(response)
-                if response.status_code == 401:
-                    print("entro al if 401")
-                    tokenR = refreshToken(request=request)
-                    print("lo q devuelve el refresh", tokenR)
-                    tokenRAcceso = tokenR["access_token"]
-                    tokenRRefresh = tokenR["refresh_token"]
-                    print(tokenRAcceso)
-                    # token = request.cookies.get("access_token")
-                    # scheme, param = get_authorization_scheme_param(token)
-                    headers = {"Authorization": "Bearer {}".format(tokenRAcceso)}
-                    print(headers)
-                    response = requests.get(url, headers=headers)
-                    print(response)
-                    result = json.loads(str(response.text))
-                    users = result["data"]
-                    # form.__dict__.update(users = users)
-                    # context =
-                    # print(responseA.context)
-                    # responseB = responses.RedirectResponse(
-                    #     f"/resultado/{users}", status_code=status.HTTP_302_FOUND
-                    # )
-                    responseB= templates.TemplateResponse("general_pages/homepage.html", {'request':request, 'users':users, 'area':area})
-                    responseB.set_cookie(
-                        key="access_token",
-                        value=f"Bearer {tokenRAcceso}",
-                        httponly=True,
-                    )
-                    responseB.set_cookie(
-                        key="refresh_token",
-                        value=f"Bearer {tokenRRefresh}",
-                        httponly=True,
-                    )
-
-                    return responseB
-                else:
-                    # data = json.dumps(result)
-                    result = json.loads(str(response.text))
-                    # print(result["data"])
-                    users = result["data"]
-                    print(users[0]["cUJAEPersonType"])
-                    # for user in users:
-                    #  print(user)
-                    #  print(user["name"])
-
-                    # print(response.text)
-                    # print(form.Check1)
-
-            return templates.TemplateResponse("general_pages/homepage.html", {'request':request, 'users':users, 'area':area})
-        except HTTPException:
-            return templates.TemplateResponse(
-                "general_pages/homepage.html", form.__dict__
-            )
-    # await form_lista.is_valid()
-    # if form_lista.is_valid():
-    # print("entro")
-    # return templates.TemplateResponse(
-    #     "general_pages/homepage.html", {"request": request}
-    # )
+    else:       
+        errorArea= form.errorArea
+        errorCI = form.errorCI
+        response = templates.TemplateResponse(
+                "general_pages/homepage.html",
+                {"request": request,
+                "total_areas": total_areas,
+                "lista_areas":lista_areas,
+                "errorArea": errorArea,
+                "errorCI": errorCI })
+        return response
+      

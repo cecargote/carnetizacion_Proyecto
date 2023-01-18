@@ -9,6 +9,7 @@ from sqlalchemy.orm import relationship
 
 
 class Person(Base):
+    
     ci = Column(String, nullable=False, primary_key=True)
     nombre = Column(String, nullable=False)
     is_activa = Column(Boolean(), default=True)

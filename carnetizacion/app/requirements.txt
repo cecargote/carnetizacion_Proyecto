@@ -36,3 +36,5 @@ httpx
 
 #for testing
 pytest
+
+fastapi_login

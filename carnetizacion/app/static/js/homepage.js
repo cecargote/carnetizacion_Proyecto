@@ -17,6 +17,7 @@ function AnnoEstudiante(){
     }
 }
 
+
 function SeleccionarTodo(){
     console.log("entro al seleccionar todo")
     console.log(document.getElementById("seleccionar_todo"))

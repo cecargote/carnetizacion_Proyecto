@@ -9,10 +9,11 @@ class BuscarPersonaForm:
         self.request: Request = request
         self.errorCI: Optional[str] = ""
         self.users: List
-        self.errorArea: Optional[str]
+        self.errorArea: Optional[str]= ""
         self.ciBuscarPersona: Optional[str]
         self.areaBuscarPersona: Optional[str]
         self.tipoBuscarPersona: Optional[str]
+        self.errorTipo: Optional[str]
         self.Check1: bool
         self.Check2: bool
         self.Check3: bool
@@ -28,13 +29,30 @@ class BuscarPersonaForm:
         self.Check3 = form.get("Check3")
         self.Check4 = form.get("Check4")
 
-    async def is_valid(self):
-        if not self.areaBuscarPersona:
+    def is_valid(self):
+        result = True
+        if self.areaBuscarPersona == "Seleccione":
             self.errorArea = "*Este campo es obligatorio"
-            return True
-        else:
-            if self.ciBuscarPersona and not len(self.ciBuscarPersona) == 11:
-                self.errorCI = "Un Carnet de Identidad valido es requerido"
-                return True
-            else:
-                return False
+            result = False
+       
+        if  not len(self.ciBuscarPersona) == 11:
+            self.errorCI = "*Un Carnet de Identidad no valido"
+            result = False
+        #if self.tipoBuscarPersona == "Seleccione":
+        #    result = False
+
+        return result
+    
+    def is_carntet_x_lotes(self):
+        result = True
+        if self.areaBuscarPersona == "Seleccione":
+            self.errorArea = "*Este campo es obligatorio"
+            result = False
+        if self.tipoBuscarPersona == "Seleccione":
+            self.errorTipo = "*Este campo es obligatorio"
+            result = False
+
+        return result
+
+
+     

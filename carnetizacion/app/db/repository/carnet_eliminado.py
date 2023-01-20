@@ -3,7 +3,6 @@ from sqlalchemy import desc
 
 from schemas.carnet_eliminado import CarnetEliminadoCreate
 from db.models.carnet_eliminado import CarnetEliminado
-from 
 
 def create_new_carnet_eliminado(carnet_eliminado: CarnetEliminadoCreate,db: Session,person_ci:int):
 

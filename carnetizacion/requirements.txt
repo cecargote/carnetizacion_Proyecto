@@ -2,7 +2,7 @@ psycopg2-binary
 uvicorn
 requests
 barcode_generator
-fastapi == 0.78.0
+fastapi
 psycopg2
 pydantic
 qrcode
@@ -12,6 +12,8 @@ uvicorn[standard]
 python-jose
 PyJWT
 python-multipart
+
+
 
 #database
 sqlalchemy
@@ -36,3 +38,5 @@ httpx
 
 #for testing
 pytest
+
+fastapi_login

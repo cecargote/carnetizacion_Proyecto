@@ -1,12 +1,12 @@
 psycopg2-binary
 uvicorn
 requests
-barcode_generator==0.1rc15cd
+barcode_generator
 psycopg2
 pydantic
-qrcode==7.3.1
+qrcode
 starlette
-python-barcode==0.13.1
+python-barcode
 python-jose
 PyJWT
 python-multipart

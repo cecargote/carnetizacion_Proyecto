@@ -1,17 +1,19 @@
 psycopg2-binary
 uvicorn
-requests==2.26.0
-barcode_generator==0.1rc15
-fastapi==0.78.0
+requests
+barcode_generator
+fastapi
 psycopg2
 pydantic
-qrcode==7.3.1
+qrcode
 starlette
-python-barcode==0.13.1
+python-barcode
 uvicorn[standard]
 python-jose
 PyJWT
 python-multipart
+
+
 
 #database
 sqlalchemy

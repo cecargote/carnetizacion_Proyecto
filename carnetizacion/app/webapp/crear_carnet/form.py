@@ -41,12 +41,11 @@ class crearCarnetForm:
         self.tipoMotivo = form.get("tipoMotivo")
         # self.estado = form.get("estado")
         self.rol = form.get("rol")
-        self.folio = form.get("folio")
+        #self.folio = form.get("folio") se desactivo el folio
         # self.fotoCarnet = form.get("fotoCarnet")
     
     async def is_valid(self):
-        if not self.folio:
-            self.errorFolio= "Un folio es requerido"
+    
         if not self.tipoMotivo or self.tipoMotivo=="Seleccione":
             self.errorMotivo =  "Un motivo es requerido"
         if not self.errorFolio and not self.errorMotivo:

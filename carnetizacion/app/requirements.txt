@@ -37,3 +37,8 @@ httpx
 pytest
 
 fastapi_login
+
+shortcuts
+views
+
+django

@@ -211,10 +211,18 @@ async def crear_carnet_post(area,ci,request:Request, db: Session = Depends(get_d
             
             form.nombre= user['name']+" "+user['lastname']+" "+user['surname']
             
+            #=====================================================
+
+            form.folio = None # se desactivo el folio, es null
+            print("")
+            print ("folio desactivado del formulario")
+            print("")
+
+            #=====================================================
             
             print("===========Datos del usuario======================")
             print("ci: ",form.ci)
-            print("folio ",form.folio)
+            #print("folio ",form.folio)
             print("folio desactivo ",form.folio_desactivo)
             print("area ",form.area)
             print("area anterior ",form.area_anterior)

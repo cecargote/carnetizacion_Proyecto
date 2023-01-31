@@ -19,7 +19,7 @@ from db.repository.carnet_activo import lista_entregados
 from db.repository.person import list_persons
 from db.repository.tipo_motivos import list_motivos
 from sqlalchemy.orm import Session
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 templates = Jinja2Templates(directory="templates")
 
@@ -41,8 +41,20 @@ async def carnet_entregados(request: Request, db: Session = Depends(get_db)):
         
         motivos = list_motivos(db=db)
         
+        paginate_by = 10
+        paginator = Paginator(carnets, 10) # 6 employees per page
+
+        try:
+            page_obj = paginator.page(paginate_by)
+        except PageNotAnInteger:
+            # if page is not an integer, deliver the first page
+            page_obj = paginator.page(1)
+        except EmptyPage:
+            # if the page is out of range, deliver the last page
+            page_obj = paginator.page(paginator.num_pages)
+
         response = templates.TemplateResponse(
-            "general_pages/carnets/carnets_entregados.html", {"request": request, "carnets": carnets, "persons": persons, "motivos":motivos}
+            "general_pages/carnets/carnets_entregados.html", {"request": request, "carnets": carnets, "persons": persons, "motivos":motivos, 'page_obj': page_obj}
         )
         try:
             current_user: Usuario = get_current_user_from_token(param, db)

@@ -38,3 +38,7 @@ httpx
 pytest
 
 fastapi_login
+
+xlrd
+pandas
+openpyxl

@@ -1,89 +1,73 @@
 print ("archivo de prueba")
 
+import pandas
+
+archivo = 'C:/Users/Carlos Laptop/Downloads/datos2.xlsx'
+  
+
+hoja = pandas.read_excel(archivo,engine="openpyxl")
+
+
+#print(hoja["ci"])
+list = hoja
+
+#print(list["ci"])
+
+result = list[(list["name"]=="juan")]
+
+print(result)
+print("no se encontro")
+i=0
+size = len(list)
+while i< size:
+   last_name_temp= list.iloc[i,3]
+   name_temp= list.iloc[i,2]
+   ci_temp = list.iloc[i,1]
+   ci_temp = ""+str(ci_temp)
+   
+   if(name_temp=="Andrés" and last_name_temp =="Carvajal Elena" or ci_temp=="98012108648" ):
+      cargo_temp= list.iloc[i,6]
+      print(i, " ",ci_temp," " ,name_temp," ",last_name_temp," cargo: ",cargo_temp)
+   i+=1
+
+cargo = result["ocupation"]
+
+string = str(cargo.values)
+print(string)
+newstring = ""+ string.replace("['","")
+newstring = ""+ newstring.replace("']","")
+print(newstring)
+
+print("holaaa")
+#for iter in list:
+ #   print(iter)
+  #  if str(iter) == "87122009159":
+     #   print ("found")
+     #   print("index: ", list.i)
+        #print(list.iloc[list.index])
+        
+
 import requests
 import json
-ci = "97041207064"
-area = "DG de ICI Area Central"
 
+import requests
+import json
 
-reqUrl = "https://sigenu.cujae.edu.cu/sigenu-ldap-cujae/ldap/areas"
-
-headersList = {
- "Accept": "*/*",
- "User-Agent": "Thunder Client (https://www.thunderclient.com)",
- "Authorization": "Basic ZGlzZXJ0aWMubGRhcDpkaXNlcnRpYyoyMDIyKmxkYXA=" 
-}
-
-payload = ""
-
-response = requests.request("GET", reqUrl, data=payload,  headers=headersList)
-
-result = json.loads(str(response.text))
-       
-lista=""
-count =0
-for iter in result:
-    count= count +1
-    if iter['name'] == area:
-        
-        area = iter['distinguishedName']
-        break
-
-print(count)
-print (area)
-
-
-
-
-
-reqUrl = "https://sigenu.cujae.edu.cu/sigenu-ldap-cujae/ldap/search-all"
+reqUrl = "https://sigenu.cujae.edu.cu/sigenu-rest/student/fileStudent/getStudentAllData/97041207064"
 
 headersList = {
  "Accept": "*/*",
  "User-Agent": "Thunder Client (https://www.thunderclient.com)",
- "Authorization": "Basic ZGlzZXJ0aWMubGRhcDpkaXNlcnRpYyoyMDIyKmxkYXA=",
+ "Authorization": "Basic ZGlzZXJ0aWMud3Muc2lnZW51OmRpc2VydGljLndzKjIwMTUq",
  "Content-Type": "application/json" 
 }
 
-payload = json.dumps({
-    "identification": ci,
-    "name": "",
-    "lastname": "",
-    "surname": "",
-    "email": "",
-    "area": area
-})
-
-response = requests.request("POST", reqUrl, data=payload,  headers=headersList)
-result = json.loads(str(response.text))
-prueba = None
-print(result[0]['name'])
-if prueba is not None:
-    print("es none")
-print(bool(result))
-
-
-reqUrl = "https://sigenu.cujae.edu.cu/sigenu-ldap-cujae/ldap/persons?area=OU=DG de ICI,OU=Area Central,DC=cujae,DC=edu,DC=cu"
-
-headersList = {
-            "Accept": "*/*",
-            "User-Agent": "Thunder Client (https://www.thunderclient.com)",
-            "Authorization": "Basic ZGlzZXJ0aWMubGRhcDpkaXNlcnRpYyoyMDIyKmxkYXA=",
-            "Content-Type": "application/json" 
-            }
-
-payload = json.dumps({
-        "area":area
-        })
+payload = json.dumps("")
 
 response = requests.request("GET", reqUrl, data=payload,  headers=headersList)
-userstemp =  json.loads(str(response.text))
-listReturn= []
-for temp in userstemp:
-            if temp['personType']== "Student":
-                listReturn.append(temp)
 
-print("lis",len(listReturn))
-print("usertemp",len(userstemp))
+#print(response.text)
 
-
+result = json.loads(response.text)
+tipo =result[0]["docentData"]['studentStatus']
+print(tipo)

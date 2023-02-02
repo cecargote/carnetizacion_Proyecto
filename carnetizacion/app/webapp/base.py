@@ -11,6 +11,9 @@ from webapp.crear_carnet import router_crear_carnet
 from webapp.home import router_home
 from webapp.resultado_busqueda import router_resultado_busqueda
 from webapp.crear_carnet.carnets import router_carnet_solicitados
+from webapp.crear_carnet.carnets import router_carnet_hechos
+from webapp.crear_carnet.carnets import router_carnet_entregados
+from webapp.crear_carnet.carnets import router_carnet_eliminados
 
 api_router = APIRouter()
 
@@ -39,4 +42,13 @@ api_router.include_router(
 )
 api_router.include_router(
     router_carnet_solicitados.router, prefix="", tags=["Carnets solicitados"]
+)
+api_router.include_router(
+    router_carnet_hechos.router, prefix="", tags=["Carnets hechos"]
+)
+api_router.include_router(
+    router_carnet_entregados.router, prefix="", tags=["Carnets entregados"]
+)
+api_router.include_router(
+    router_carnet_eliminados.router, prefix="", tags=["Carnets Eliminados"]
 )

@@ -42,3 +42,9 @@ shortcuts
 views
 
 django
+
+fastapi_login
+
+xlrd
+pandas
+openpyxl

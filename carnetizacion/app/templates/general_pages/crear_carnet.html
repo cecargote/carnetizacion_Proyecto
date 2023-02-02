@@ -84,9 +84,9 @@
                             
                                 {%- elif user["personType"] == "Worker" -%}
                                 {% if user["personTeacher"] == "TRUE" -%}
-                            <input disabled type="text" class="form-control" id="rol" name="rol" value={{rol}}>
+                            <input disabled type="text" class="form-control" id="rol" name="rol" value="{{rol}}">
                                 {% elif user["personTeacher"] == "FALSE" -%}
-                            <input disabled type="text" class="form-control" id="rol" name="rol" value={{rol}}>
+                            <input disabled type="text" class="form-control" id="rol" name="rol" value="{{rol}}">
                             {%- endif %}
                             {%- endif %}
                             </select>

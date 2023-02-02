@@ -40,7 +40,7 @@ from db.repository.carnet_activo import lista_solicitados, get_carnet_by_person
 from db.repository.person import list_persons, update_person_by_ci
 from schemas.carnet_eliminado import CarnetEliminadoCreate
 from webapp.crear_carnet.form import crearCarnetForm
-
+import pandas
 # import treepoem
 
 # from requests import *
@@ -80,7 +80,7 @@ def buscar_Tipo_Estudiante_carnet(ci: str):
 
     return tipo
 def buscar_consejo_universitario(ci:str, name : str, last_name):
-    archivo = 'C:/Users/Carlos Laptop/Downloads/datos2.xlsx'
+    archivo = 'C:/Users/Asus/Downloads/datos2.xlsx'
     hoja = pandas.read_excel(archivo,engine="openpyxl")
     list = hoja
     last_name_temp=""
@@ -274,21 +274,25 @@ async def crear_carnet_post(area,ci,request:Request, db: Session = Depends(get_d
             else:
                 print("folio desactivo: No existe folio anterior")
             print("area ",form.area)
-            if person != None:
-                print("area anterior ",person.area)
+            
+            if person is None:
+                print("area anterior: "+"No existe Area anteriror")             
             else:
-                print("area anterior: "+"No existe Area anteriror")
-            print("comprobante motivo ",form.comprobante_motivo)
+                print("area anterior ",person.area)
+            
+            print("comprobante motivo: ",form.comprobante_motivo)
             print("estado ",form.estado)
             if(user["personType"] == "Student"):
                 print("anno estudiante ",form.annoEstudiantePersona)
             print("nombre ",form.nombre)
             print("rol ",form.rol)
             print("tipo de persona ",form.tipoPersona)
-            if person != None:
-                print("rol anterior",person.rol)  
+            
+            if person is None:
+                print("rol anterior","No existe Rol anterior")         
             else:
-                print("rol anterior","No existe Rol anterior")    
+                print("rol anterior",person.rol)
+                    
             print("motivo",form.tipoMotivo)
             print("comprobante motivo: ",form.comprobante_motivo)
 
@@ -308,15 +312,15 @@ async def crear_carnet_post(area,ci,request:Request, db: Session = Depends(get_d
                 print("persona: ", person_a.rol)
 
             else:
-                person_a = update_person_by_ci(ci, person,db)
                 form.folio_desactivo = carnet_anterior.folio
                 form.area_anterior = person.area
                 form.rol_anterior = person.rol
+               
                 person_a = PersonCreate(**form.__dict__)
-
+    
                 person_a = update_person_by_ci(ci, person_a,db)
                 print("Se actualizo la persona")
-                
+
             if carnet_anterior is not None: # si tiene carnet anterior
                 print("existia un carnet anterior y se actualizara")
                 form.folio_desactivo= carnet_anterior.folio 
@@ -328,6 +332,8 @@ async def crear_carnet_post(area,ci,request:Request, db: Session = Depends(get_d
                 print("se actualizo el nuevo carnet y se guardo el viejo")
             else:
                 print("El usuario no tenia carnet activo")
+                form.folio = -1
+                
                 carnet_activo = CarnetActivoCreate(**form.__dict__)
                 carnet_activo = create_new_carnet_activo(carnet_activo=carnet_activo, db=db, person_ci=ci,tipo_motivo_id=form.tipoMotivo)
             
